@@ -1,26 +1,30 @@
 import { AntDesign } from "@expo/vector-icons";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
+  const primaryColor = "#FF7200FF";
+  const greyColor = "#737373";
+
   const icons = {
-    index: (props: any) => (
+    home: (props: any) => (
       <AntDesign size={26} color={greyColor} name="home" {...props} />
     ),
-    explore: (props: any) => (
-      <AntDesign size={26} color={greyColor} name="user" {...props} />
+    myPets: (props: any) => (
+      <FontAwesome name="paw" size={24} color={greyColor} {...props} />
     ),
-    create: (props: any) => (
-      <AntDesign size={26} color={greyColor} name="pluscircleo" {...props} />
+    shop: (props: any) => (
+      <AntDesign size={26} color={greyColor} name="shoppingcart" {...props} />
+    ),
+    message: (props: any) => (
+      <AntDesign size={26} color={greyColor} name="message1" {...props} />
     ),
     profile: (props: any) => (
       <AntDesign size={26} color={greyColor} name="user" {...props} />
     ),
   };
-
-  const primaryColor = "#0891b2";
-  const greyColor = "#737373";
 
   return (
     <View style={styles.tabbar}>
@@ -30,8 +34,8 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
           options.tabBarLabel !== undefined
             ? options.tabBarLabel
             : options.title !== undefined
-            ? options.title
-            : route.name;
+              ? options.title
+              : route.name;
 
         if (["_sitemap", "+not-found"].includes(route.name)) return null;
 
@@ -56,6 +60,10 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
           });
         };
 
+        // Get the icon component and add safety check
+        const IconComponent = icons[route.name as keyof typeof icons];
+        if (!IconComponent) return null;
+
         return (
           <TouchableOpacity
             key={route.name}
@@ -66,9 +74,7 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
             onPress={onPress}
             onLongPress={onLongPress}
           >
-            {icons[route.name as keyof typeof icons]({
-              color: isFocused ? primaryColor : greyColor,
-            })}
+            <IconComponent color={isFocused ? primaryColor : greyColor} />
 
             <Text
               style={{
