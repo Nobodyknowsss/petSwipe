@@ -1,34 +1,21 @@
-import TabBar from "@/components/TabBar";
-import { Tabs } from "expo-router";
+import { Stack } from "expo-router";
 import React from "react";
 
 export default function layout() {
   return (
-    <Tabs tabBar={(props) => <TabBar {...props} />}>
-      <Tabs.Screen
-        name="index"
+    <Stack>
+      <Stack.Screen
+        name="(userTabs)"
         options={{
-          title: "Home",
+          headerShown: false,
         }}
       />
-      <Tabs.Screen
-        name="explore"
+      <Stack.Screen
+        name="(adminTabs)"
         options={{
-          title: "Explore",
+          headerShown: false,
         }}
       />
-      <Tabs.Screen
-        name="create"
-        options={{
-          title: "Create",
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Profile",
-        }}
-      />
-    </Tabs>
+    </Stack>
   );
 }
