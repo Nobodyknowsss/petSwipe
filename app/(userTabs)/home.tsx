@@ -9,7 +9,7 @@ export default function Home() {
       <Text className="text-3xl font-bold text-black">home</Text>
       <Pressable className="mt-4" onPress={() => router.push("/(auth)/login")}>
         <Text className="p-4 text-lg text-white bg-green-500 rounded-[32px] border">
-          Home
+          Login
         </Text>
       </Pressable>
     </View>
