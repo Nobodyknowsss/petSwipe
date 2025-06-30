@@ -1,18 +1,17 @@
 import { Stack } from "expo-router";
 import React from "react";
-import "../global.css";
 
 export default function layout() {
   return (
     <Stack>
       <Stack.Screen
-        name="(auth)"
+        name="login"
         options={{
           headerShown: false,
         }}
       />
       <Stack.Screen
-        name="(userTabs)"
+        name="signup"
         options={{
           headerShown: false,
         }}
