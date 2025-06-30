@@ -20,6 +20,7 @@ interface AuthContextType {
   ) => Promise<boolean>;
   SignOut: () => Promise<void>;
   showToast: (message: string, type?: "success" | "error") => void;
+  setUserState: (user: User | null) => void;
 }
 
 export const AuthContext = React.createContext<AuthContextType>({
@@ -29,6 +30,7 @@ export const AuthContext = React.createContext<AuthContextType>({
   SignUp: async () => false,
   SignOut: async () => {},
   showToast: () => {},
+  setUserState: () => {},
 });
 
 export const useAuth = () => React.useContext(AuthContext);
@@ -154,39 +156,39 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.error("Error signing out:", error.message);
         showToast("Failed to sign out", "error");
       } else {
-        setUser(null);
         showToast("Signed out successfully", "success");
-        router.push("/");
+        router.replace("/(auth)/login");
       }
     } finally {
       setLoading(false);
     }
   };
 
+  const setUserState = (user: User | null) => {
+    setUser(user);
+  };
+
   React.useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         getUser(session.user.id);
-      }
-      // Don't redirect to login anymore - let users browse as guests
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        getUser(session.user.id);
       } else {
-        setUser(null);
+        router.push("/(auth)/login");
       }
     });
-
-    return () => subscription.unsubscribe();
   }, []);
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, SignIn, SignOut, SignUp, showToast }}
+      value={{
+        user,
+        loading,
+        SignIn,
+        SignOut,
+        SignUp,
+        showToast,
+        setUserState,
+      }}
     >
       {children}
     </AuthContext.Provider>

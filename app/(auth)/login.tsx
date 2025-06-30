@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -19,7 +19,7 @@ export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { SignIn, loading } = useAuth();
+  const { SignIn, loading, setUserState } = useAuth();
 
   const handleLogin = async () => {
     const success = await SignIn(email, password);
@@ -27,6 +27,10 @@ export default function Login() {
       router.push("/(userTabs)/home");
     }
   };
+
+  useEffect(() => {
+    setUserState(null);
+  }, []);
 
   return (
     <KeyboardAvoidingView
