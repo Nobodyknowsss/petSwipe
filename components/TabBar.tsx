@@ -1,19 +1,20 @@
 import { AntDesign } from "@expo/vector-icons";
+import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-const TabBar = ({ state, descriptors, navigation }) => {
+const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
   const icons = {
-    index: (props) => (
+    index: (props: any) => (
       <AntDesign size={26} color={greyColor} name="home" {...props} />
     ),
-    explore: (props) => (
+    explore: (props: any) => (
       <AntDesign size={26} color={greyColor} name="user" {...props} />
     ),
-    create: (props) => (
+    create: (props: any) => (
       <AntDesign size={26} color={greyColor} name="pluscircleo" {...props} />
     ),
-    profile: (props) => (
+    profile: (props: any) => (
       <AntDesign size={26} color={greyColor} name="user" {...props} />
     ),
   };
@@ -23,7 +24,7 @@ const TabBar = ({ state, descriptors, navigation }) => {
 
   return (
     <View style={styles.tabbar}>
-      {state.routes.map((route, index) => {
+      {state.routes.map((route: any, index: number) => {
         const { options } = descriptors[route.key];
         const label =
           options.tabBarLabel !== undefined
@@ -62,11 +63,10 @@ const TabBar = ({ state, descriptors, navigation }) => {
             accessibilityRole="button"
             accessibilityState={isFocused ? { selected: true } : {}}
             accessibilityLabel={options.tabBarAccessibilityLabel}
-            testID={options.tabBarTestID}
             onPress={onPress}
             onLongPress={onLongPress}
           >
-            {icons[route.name]({
+            {icons[route.name as keyof typeof icons]({
               color: isFocused ? primaryColor : greyColor,
             })}
 
