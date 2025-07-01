@@ -28,7 +28,7 @@ const mockPets: Pet[] = [
     breed: "Golden Retriever",
     age: 3,
     image:
-      "https://unsplash.com/photos/a-golden-retriever-sitting-on-a-sandy-beach-FTbC150wV8Q",
+      "https://images.unsplash.com/photo-1517423440428-a5a00ad493e8?auto=format&fit=crop&w=200&q=80",
     description: "Friendly and energetic dog",
   },
   {
