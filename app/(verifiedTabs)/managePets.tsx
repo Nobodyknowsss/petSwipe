@@ -81,7 +81,7 @@ const mockPets: Pet[] = [
     name: "Nala",
     breed: "British Shorthair",
     age: 3,
-    image: "https://unsplash.com/photos/cat-on-the-chair-rfNF4SyMt4Q",
+    image: "https://images.unsplash.com/photo-1592194996308-7b43878e84a6?auto=format&fit=crop&w=200&q=80",
     description: "Chill and cuddly cat",
   },
 ];
