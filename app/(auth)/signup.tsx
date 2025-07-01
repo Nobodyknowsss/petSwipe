@@ -23,10 +23,7 @@ export default function Signup() {
   const { SignUp, loading } = useAuth();
 
   const handleSignUp = async () => {
-    const success = await SignUp(email, password, username);
-    if (success) {
-      router.push("/(userTabs)/home");
-    }
+    await SignUp(email, password, username);
   };
 
   const isFormValid = email && password && username && email.includes("@");

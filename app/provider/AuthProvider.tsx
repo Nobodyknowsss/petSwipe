@@ -7,6 +7,7 @@ interface User {
   id: string;
   email: string;
   username: string;
+  verified: boolean;
 }
 
 interface AuthContextType {
@@ -66,7 +67,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     setUser(data);
-    router.push("/(userTabs)/home");
+    if (data.verified) {
+      router.replace("/(verifiedTabs)/home");
+    } else {
+      router.replace("/(userTabs)/home");
+    }
   };
 
   const SignIn = async (email: string, password: string): Promise<boolean> => {
@@ -173,7 +178,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (session) {
         getUser(session.user.id);
       } else {
-        router.push("/(auth)/login");
+        router.replace("/(auth)/login");
       }
     });
   }, []);

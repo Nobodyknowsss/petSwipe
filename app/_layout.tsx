@@ -25,6 +25,12 @@ export default function layout() {
             headerShown: false,
           }}
         />
+        <Stack.Screen
+          name="(verifiedTabs)"
+          options={{
+            headerShown: false,
+          }}
+        />
       </Stack>
     </AuthProvider>
   );

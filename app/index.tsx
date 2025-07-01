@@ -1,23 +1,21 @@
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
 
 export default function Index() {
   const router = useRouter();
-  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsReady(true);
-      router.replace("/(userTabs)/home");
-    }, 100);
+    const fallbackTimer = setTimeout(() => {
+      router.replace("/(auth)/login");
+    }, 3000);
 
-    return () => clearTimeout(timer);
+    return () => clearTimeout(fallbackTimer);
   }, [router]);
 
   return (
     <View className="flex-1 justify-center items-center bg-white">
-      <ActivityIndicator size="large" color="#3B82F6" />
+      <ActivityIndicator size="large" color="#FF7200FF" />
     </View>
   );
 }

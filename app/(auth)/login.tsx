@@ -22,10 +22,8 @@ export default function Login() {
   const { SignIn, loading, setUserState } = useAuth();
 
   const handleLogin = async () => {
-    const success = await SignIn(email, password);
-    if (success) {
-      router.push("/(userTabs)/home");
-    }
+    await SignIn(email, password);
+    // Navigation is handled automatically in AuthProvider based on verification status
   };
 
   useEffect(() => {
