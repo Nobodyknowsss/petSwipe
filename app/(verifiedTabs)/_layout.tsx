@@ -1,4 +1,4 @@
-import TabBar from "@/components/TabBar";
+import TabBar from "@/components/verefiedTabBar";
 import { Tabs } from "expo-router";
 import React from "react";
 
@@ -13,16 +13,16 @@ export default function layout() {
         }}
       />
       <Tabs.Screen
-        name="myPets"
+        name="managePets"
         options={{
-          title: "My Pets",
+          title: "Manage",
           headerShown: false,
         }}
       />
       <Tabs.Screen
-        name="shop"
+        name="adopters"
         options={{
-          title: "Shop",
+          title: "Adopters",
           headerShown: false,
         }}
       />

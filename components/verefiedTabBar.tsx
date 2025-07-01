@@ -1,5 +1,6 @@
 import { AntDesign } from "@expo/vector-icons";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -12,11 +13,16 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
     home: (props: any) => (
       <AntDesign size={26} color={greyColor} name="home" {...props} />
     ),
-    myPets: (props: any) => (
+    managePets: (props: any) => (
       <FontAwesome name="paw" size={24} color={greyColor} {...props} />
     ),
-    shop: (props: any) => (
-      <AntDesign size={26} color={greyColor} name="shoppingcart" {...props} />
+    adopters: (props: any) => (
+      <FontAwesome6
+        name="hands-holding"
+        size={24}
+        color={greyColor}
+        {...props}
+      />
     ),
     message: (props: any) => (
       <AntDesign size={26} color={greyColor} name="message1" {...props} />
