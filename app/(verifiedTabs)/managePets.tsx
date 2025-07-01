@@ -71,7 +71,7 @@ const mockPets: Pet[] = [
     id: "6",
     name: "Milo",
     breed: "Siberian Husky",
-    age: 2,
+    age: 8,
     image:
       "https://images.unsplash.com/photo-1596495577886-d920f1fb7238?auto=format&fit=crop&w=200&q=80",
     description: "Energetic and playful pup",
@@ -81,7 +81,8 @@ const mockPets: Pet[] = [
     name: "Nala",
     breed: "British Shorthair",
     age: 3,
-    image: "https://images.unsplash.com/photo-1592194996308-7b43878e84a6?auto=format&fit=crop&w=200&q=80",
+    image:
+      "https://images.unsplash.com/photo-1592194996308-7b43878e84a6?auto=format&fit=crop&w=200&q=80",
     description: "Chill and cuddly cat",
   },
 ];
@@ -177,7 +178,7 @@ export default function ManagePet() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            className="px-3 py-3 mt-4 bg-red-50 rounded-lg"
+            className="px-3 py-3 mt-4 rounded-lg bg-red-50"
             onPress={() => handleDeletePet(pet.id, pet.name)}
           >
             <Text className="text-xs font-semibold text-red-600">DELETE</Text>
@@ -188,9 +189,9 @@ export default function ManagePet() {
   );
 
   const EmptyState = () => (
-    <View className="justify-center items-center py-16">
+    <View className="items-center justify-center py-16">
       <View
-        className="justify-center items-center mb-4 w-20 h-20 rounded-full"
+        className="items-center justify-center w-20 h-20 mb-4 rounded-full"
         style={{ backgroundColor: "rgba(255, 114, 0, 0.1)" }}
       >
         <Text className="text-3xl">🐾</Text>
@@ -228,7 +229,7 @@ export default function ManagePet() {
           <TextInput
             placeholder="Search pets by name or breed..."
             placeholderTextColor="#9CA3AF"
-            className="px-5 py-4 pr-12 w-full text-base text-gray-800 bg-white rounded-2xl border-2 border-gray-100"
+            className="w-full px-5 py-4 pr-12 text-base text-gray-800 bg-white border-2 border-gray-100 rounded-2xl"
             style={{
               shadowColor: "#000",
               shadowOffset: { width: 0, height: 2 },
@@ -256,7 +257,7 @@ export default function ManagePet() {
       {/* Pet List */}
       <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
         {loading ? (
-          <View className="justify-center items-center py-16">
+          <View className="items-center justify-center py-16">
             <ActivityIndicator size="large" color="#FF7200FF" />
             <Text className="mt-4 text-gray-600">Loading pets...</Text>
           </View>
@@ -275,7 +276,7 @@ export default function ManagePet() {
       {/* Floating Add Button */}
       {pets.length > 0 && (
         <TouchableOpacity
-          className="absolute right-6 bottom-40 justify-center items-center w-16 h-16 rounded-full shadow-lg"
+          className="absolute items-center justify-center w-16 h-16 rounded-full shadow-lg right-6 bottom-40"
           style={{
             backgroundColor: "#FF7200FF",
             shadowColor: "#FF7200FF",
