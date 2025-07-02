@@ -1,3 +1,5 @@
+"use client";
+
 import { useFocusEffect } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
@@ -171,7 +173,12 @@ const MediaUploadSection = ({
       }}
     >
       {loading ? (
-        <ActivityIndicator size="large" color="#FF7200FF" />
+        <View className="items-center">
+          <ActivityIndicator size="large" color="#FF7200FF" />
+          <Text className="mt-2 text-sm text-gray-600">
+            {mediaType === "video" ? "Processing video..." : "Loading..."}
+          </Text>
+        </View>
       ) : selectedMedia ? (
         <View className="overflow-hidden w-full h-full rounded-2xl">
           {mediaType === "image" ? (
@@ -204,10 +211,10 @@ const MediaUploadSection = ({
           <Text className="font-semibold text-gray-700">
             Tap to add {mediaType === "image" ? "photo" : "video"}
           </Text>
-          <Text className="mt-1 text-sm text-gray-500">
+          <Text className="mt-1 text-sm text-center text-gray-500">
             {mediaType === "image"
               ? "Images will be compressed for optimal upload"
-              : "Videos limited to 60 seconds"}
+              : "Videos limited to 60 seconds and under 50MB\nFor best results, use 1080p or lower resolution"}
           </Text>
         </View>
       )}
@@ -334,51 +341,57 @@ export default function AddPet() {
       return;
     }
 
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.8,
-      videoMaxDuration: mediaType === "video" ? 60 : undefined,
-    });
+    // For videos, use aggressive compression settings
+    if (mediaType === "video") {
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+        allowsEditing: true,
+        quality: 1, // Very low quality to force smaller file sizes
+        videoMaxDuration: 60,
+        videoExportPreset: ImagePicker.VideoExportPreset.H264_1920x1080,
+      });
 
-    if (!result.canceled && result.assets[0]) {
-      // Filter based on the desired media type
-      const asset = result.assets[0];
-      const assetType = asset.type === "video" ? "video" : "image";
+      if (!result.canceled && result.assets[0]) {
+        await handleMediaSelection(result.assets[0], mediaType);
+      }
+    } else {
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
 
-      if (assetType === mediaType) {
-        await handleMediaSelection(asset, mediaType);
-      } else {
-        Alert.alert(
-          "Wrong Media Type",
-          `Please select a ${mediaType} instead.`
-        );
+      if (!result.canceled && result.assets[0]) {
+        await handleMediaSelection(result.assets[0], mediaType);
       }
     }
   };
 
   const openLibrary = async (mediaType: "image" | "video") => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.8,
-      videoMaxDuration: mediaType === "video" ? 60 : undefined,
-    });
+    // For videos, use aggressive compression settings
+    if (mediaType === "video") {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+        allowsEditing: true,
+        quality: 1, // Very low quality to force smaller file sizes
+        videoMaxDuration: 60,
+        videoExportPreset: ImagePicker.VideoExportPreset.H264_960x540,
+      });
 
-    if (!result.canceled && result.assets[0]) {
-      // Filter based on the desired media type
-      const asset = result.assets[0];
-      const assetType = asset.type === "video" ? "video" : "image";
+      if (!result.canceled && result.assets[0]) {
+        await handleMediaSelection(result.assets[0], mediaType);
+      }
+    } else {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
 
-      if (assetType === mediaType) {
-        await handleMediaSelection(asset, mediaType);
-      } else {
-        Alert.alert(
-          "Wrong Media Type",
-          `Please select a ${mediaType} instead.`
-        );
+      if (!result.canceled && result.assets[0]) {
+        await handleMediaSelection(result.assets[0], mediaType);
       }
     }
   };
@@ -389,7 +402,7 @@ export default function AddPet() {
   ) => {
     setLoading((prev) => ({ ...prev, [mediaType]: true }));
     try {
-      const finalUri = asset.uri;
+      let finalUri = asset.uri;
 
       // Check initial file size
       const fileSize = await checkFileSize(asset.uri);
@@ -397,32 +410,80 @@ export default function AddPet() {
 
       console.log(`Selected ${mediaType} size: ${fileSizeMB.toFixed(2)}MB`);
 
-      // Warn user about large files
-      if (fileSizeMB > 45) {
-        Alert.alert(
-          "Large File Warning",
-          `This ${mediaType} is ${fileSizeMB.toFixed(1)}MB. It might take longer to upload. ${
-            mediaType === "image" ? "We'll compress it to reduce the size." : ""
-          }`,
-          [
-            {
-              text: "Cancel",
-              style: "cancel",
-              onPress: () => {
-                setLoading((prev) => ({ ...prev, [mediaType]: false }));
-                return;
+      // Different handling for videos vs images
+      if (mediaType === "video") {
+        if (fileSizeMB > 50) {
+          Alert.alert(
+            "Video Too Large",
+            `This video is ${fileSizeMB.toFixed(1)}MB. Videos must be under 50MB. The video may be 4K resolution. Please try:\n\n• Select a shorter video\n• Use a lower resolution setting on your camera\n• Choose a different video`,
+            [
+              {
+                text: "Cancel",
+                style: "cancel",
+                onPress: () => {
+                  setLoading((prev) => ({ ...prev, [mediaType]: false }));
+                  return;
+                },
               },
-            },
-            {
-              text: "Continue",
-              onPress: async () => {
-                await processMedia(asset, mediaType, finalUri);
+              {
+                text: "Try Anyway",
+                style: "destructive",
+                onPress: async () => {
+                  await processMedia(asset, mediaType, finalUri);
+                },
               },
-            },
-          ]
-        );
+            ]
+          );
+        } else if (fileSizeMB > 25) {
+          Alert.alert(
+            "Large Video File",
+            `This video is ${fileSizeMB.toFixed(1)}MB. It may take longer to upload. For best performance, consider using videos under 25MB.`,
+            [
+              {
+                text: "Cancel",
+                style: "cancel",
+                onPress: () => {
+                  setLoading((prev) => ({ ...prev, [mediaType]: false }));
+                  return;
+                },
+              },
+              {
+                text: "Continue",
+                onPress: async () => {
+                  await processMedia(asset, mediaType, finalUri);
+                },
+              },
+            ]
+          );
+        } else {
+          await processMedia(asset, mediaType, finalUri);
+        }
       } else {
-        await processMedia(asset, mediaType, finalUri);
+        // Handle images
+        if (fileSizeMB > 25) {
+          Alert.alert(
+            "Large Image File",
+            `This image is ${fileSizeMB.toFixed(1)}MB. We'll compress it to reduce the size.`,
+            [
+              {
+                text: "Cancel",
+                style: "cancel",
+                onPress: () => {
+                  setLoading((prev) => ({ ...prev, [mediaType]: false }));
+                  return;
+                },
+              },
+              {
+                text: "Continue",
+                onPress: async () => {
+                  await processMedia(asset, mediaType, finalUri);
+                },
+              },
+            ]
+          );
+        } else {
+          await processMedia(asset, mediaType, finalUri);
+        }
       }
     } catch (error) {
       console.error("Error processing media:", error);
@@ -437,9 +498,32 @@ export default function AddPet() {
     finalUri: string
   ) => {
     try {
+      // Log original asset info
+      console.log(`Processing ${mediaType}:`, {
+        uri: asset.uri,
+        width: asset.width,
+        height: asset.height,
+        duration: asset.duration,
+        fileSize: asset.fileSize,
+      });
+
       // Compress image if it's an image
       if (mediaType === "image") {
         finalUri = await compressImage(asset.uri);
+      } else {
+        // For videos, log the compression results
+        const originalSize = await checkFileSize(asset.uri);
+        const originalSizeMB = originalSize / (1024 * 1024);
+        console.log(
+          `Video after picker compression: ${originalSizeMB.toFixed(2)}MB`
+        );
+
+        // If video is still too large, warn user
+        if (originalSizeMB > 50) {
+          console.warn(
+            `Video still too large after compression: ${originalSizeMB}MB`
+          );
+        }
       }
 
       // Stop current video if selecting a new video
