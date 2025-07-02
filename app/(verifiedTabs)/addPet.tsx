@@ -1,7 +1,8 @@
+import { useFocusEffect } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { VideoView, useVideoPlayer } from "expo-video";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -245,6 +246,51 @@ export default function AddPet() {
     player.play();
   });
 
+  // Cleanup video player when component unmounts or video changes
+  useEffect(() => {
+    return () => {
+      try {
+        if (videoPlayer && selectedVideo) {
+          videoPlayer.pause();
+        }
+      } catch (error) {
+        console.log("Video player cleanup error:", error);
+      }
+    };
+  }, [videoPlayer, selectedVideo]);
+
+  // Stop video when navigating away
+  useEffect(() => {
+    const handleRouteChange = () => {
+      try {
+        if (videoPlayer && selectedVideo) {
+          videoPlayer.pause();
+        }
+      } catch (error) {
+        console.log("Video player route change error:", error);
+      }
+    };
+
+    return handleRouteChange;
+  }, [videoPlayer, selectedVideo]);
+
+  // Pause video when tab loses focus (user switches tabs)
+  useFocusEffect(
+    useCallback(() => {
+      // Screen is focused - video can play if user wants
+      return () => {
+        // Screen is losing focus - pause the video
+        try {
+          if (videoPlayer && selectedVideo) {
+            videoPlayer.pause();
+          }
+        } catch (error) {
+          console.log("Video player focus error:", error);
+        }
+      };
+    }, [videoPlayer, selectedVideo])
+  );
+
   const requestPermissions = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
@@ -395,6 +441,15 @@ export default function AddPet() {
         finalUri = await compressImage(asset.uri);
       }
 
+      // Stop current video if selecting a new video
+      if (mediaType === "video" && videoPlayer && selectedVideo) {
+        try {
+          videoPlayer.pause();
+        } catch (error) {
+          console.log("Video player change error:", error);
+        }
+      }
+
       const mediaFile: MediaFile = {
         uri: finalUri,
         type: mediaType,
@@ -421,8 +476,6 @@ export default function AddPet() {
       "gender",
       "location",
       "description",
-      "photoUrl",
-      "videoUrl",
     ];
     const missingFields = required.filter(
       (field) => !formData[field as keyof PetFormData].trim()
@@ -441,11 +494,13 @@ export default function AddPet() {
       return false;
     }
 
-    if (!selectedImage && !selectedVideo) {
-      Alert.alert(
-        "Media Required",
-        "Please select at least one photo or video for your pet."
-      );
+    if (!selectedImage) {
+      Alert.alert("Photo Required", "Please select a photo for your pet.");
+      return false;
+    }
+
+    if (!selectedVideo) {
+      Alert.alert("Video Required", "Please select a video for your pet.");
       return false;
     }
 
@@ -499,8 +554,24 @@ export default function AddPet() {
 
       Alert.alert("Success!", "Your pet has been added successfully.", [
         {
-          text: "OK",
-          onPress: () => router.back(),
+          text: "Add Another Pet",
+          onPress: () => {
+            resetForm();
+          },
+        },
+        {
+          text: "Go Back",
+          onPress: () => {
+            try {
+              if (videoPlayer && selectedVideo) {
+                videoPlayer.pause();
+              }
+            } catch (error) {
+              console.log("Video player success error:", error);
+            }
+            resetForm();
+            router.back();
+          },
         },
       ]);
     } catch (error) {
@@ -515,9 +586,48 @@ export default function AddPet() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const resetForm = () => {
+    // Reset form data
+    setFormData({
+      name: "",
+      breed: "",
+      age: "",
+      gender: "",
+      location: "",
+      description: "",
+    });
+
+    // Clear selected media
+    setSelectedImage(null);
+    setSelectedVideo(null);
+
+    // Reset loading states
+    setLoading({ image: false, video: false });
+
+    // Pause video player if active
+    try {
+      if (videoPlayer && selectedVideo) {
+        videoPlayer.pause();
+      }
+    } catch (error) {
+      console.log("Video player reset error:", error);
+    }
+  };
+
+  const handleBack = () => {
+    try {
+      if (videoPlayer && selectedVideo) {
+        videoPlayer.pause();
+      }
+    } catch (error) {
+      console.log("Video player back error:", error);
+    }
+    router.push("./managePets");
+  };
+
   return (
     <View className="flex-1 mb-28 bg-gradient-to-b from-orange-50 to-white">
-      <Header onBack={() => router.push("./managePets")} />
+      <Header onBack={handleBack} />
 
       <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
         {/* Image Upload Section */}
