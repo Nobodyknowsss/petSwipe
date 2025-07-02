@@ -156,6 +156,25 @@ export default function Profile() {
           <Text className="text-gray-600">{user.email}</Text>
         </View>
 
+        <View className="items-center mb-6"
+        style={{
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.05,
+          shadowRadius: 8,
+          elevation: 2,
+        }}>
+          <TouchableOpacity 
+            className="px-4 py-2 bg-white"
+            onPress={() => router.push("/(adoptionProfile)/page")}
+          >
+            <Text className="text-lg font-bold text-gray-800 mb-2">
+              Adoption Profile
+            </Text>
+          </TouchableOpacity>
+
+        </View>
+
         {/* Profile Stats */}
         <View
           className="p-6 mb-6 bg-white rounded-2xl"

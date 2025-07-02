@@ -20,6 +20,30 @@ export default function layout() {
         }}
       />
       <Tabs.Screen
+        name="addPet"
+        options={{
+          title: "Add Pet",
+          headerShown: false,
+          href: null, // Hide from tab bar
+        }}
+      />
+      <Tabs.Screen
+        name="petsList"
+        options={{
+          title: "Pets List",
+          headerShown: false,
+          href: null, // Hide from tab bar
+        }}
+      />
+      <Tabs.Screen
+        name="createPost"
+        options={{
+          title: "Create Post",
+          headerShown: false,
+          href: null, // Hide from tab bar
+        }}
+      />
+      <Tabs.Screen
         name="adopters"
         options={{
           title: "Adopters",
