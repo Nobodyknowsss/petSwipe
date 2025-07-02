@@ -1,9 +1,11 @@
 "use client"
 
 import { useRouter } from "expo-router";
-import { useState } from "react"
-import { View, Text, TextInput, TouchableOpacity, ScrollView, SafeAreaView, StatusBar } from "react-native"
+import { useState, useEffect } from "react"
+import { View, Text, TextInput, TouchableOpacity, ScrollView, SafeAreaView, StatusBar, Modal, Pressable, Alert } from "react-native"
 import { ChevronLeft, Calendar } from "lucide-react-native"
+import DateTimePicker from "@react-native-community/datetimepicker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function AdoptionApplication() {
   const router = useRouter();
@@ -30,10 +32,47 @@ export default function AdoptionApplication() {
     specificAnimal: "",
     petDescription: "",
   })
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showStatusPicker, setShowStatusPicker] = useState(false);
+  const [showPronounsPicker, setShowPronounsPicker] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const saved = await AsyncStorage.getItem("adoptionFormData");
+      if (saved) setFormData(JSON.parse(saved));
+    })();
+  }, []);
+
+  const saveFormData = async (data) => {
+    await AsyncStorage.setItem("adoptionFormData", JSON.stringify(data));
+  }
 
   const updateField = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+    const updated = { ...formData, [field]: value };
+    setFormData(updated);
+    saveFormData(updated);
   }
+
+  const handleSubmit = async () => {
+    try {
+      // Replace with backend endpoint
+      // const response = await fetch("https://your-backend-url.com/api/adoption-application", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify(formData),
+      // });
+      // if (!response.ok) throw new Error("Failed to submit");
+
+      await AsyncStorage.setItem("adoptionProfileForm", JSON.stringify(formData));
+      Alert.alert("Success", "Your application has been saved!");
+      // router.push("/(userTabs)/profile");
+    } catch (error) {
+      Alert.alert("Error", "Could not save application. Please try again later.");
+    }
+  };
+
+  const statusOptions = ["Single", "Married", "Divorced", "Widowed"];
+  const pronounsOptions = ["He/Him", "She/Her", "They/Them", "Other"];
 
   const RadioButton = ({
     options,
@@ -136,10 +175,32 @@ export default function AdoptionApplication() {
 
           <View className="mb-4">
             <Text className="text-sm text-gray-600 mb-2">Birth Date<Text style={{ color: "#FF0000" }}> *</Text></Text>
-            <TouchableOpacity className="border border-gray-300 rounded-lg px-3 py-3 bg-white flex-row items-center">
-              <Calendar size={20} color="#9CA3AF" className="mr-2" />
-              <Text className="text-gray-500">Pick a date</Text>
+            <TouchableOpacity
+              className="border border-gray-300 rounded-lg px-3 py-3 bg-white flex-row items-center"
+              onPress={() => setShowDatePicker(true)}
+              activeOpacity={0.7}
+            >
+              <Calendar size={20} color="#9CA3AF" style={{ marginRight: 8 }} />
+              <Text className={formData.birthDate ? "text-gray-800" : "text-gray-500"}>
+                {formData.birthDate
+                  ? new Date(formData.birthDate).toLocaleDateString()
+                  : "Pick a date"}
+              </Text>
             </TouchableOpacity>
+            {showDatePicker && (
+              <DateTimePicker
+                value={formData.birthDate ? new Date(formData.birthDate) : new Date()}
+                mode="date"
+                display="default"
+                maximumDate={new Date()}
+                onChange={(_, selectedDate) => {
+                  setShowDatePicker(false);
+                  if (selectedDate) {
+                    updateField("birthDate", selectedDate.toISOString());
+                  }
+                }}
+              />
+            )}
           </View>
 
           <View className="mb-4">
@@ -190,30 +251,101 @@ export default function AdoptionApplication() {
           </View>
 
           <View className="mb-4">
-            <Text className="text-sm text-gray-600 mb-2">Enter IG Network Link</Text>
-            <TextInput
-              value={formData.igNetworkLink}
-              onChangeText={(text) => updateField("igNetworkLink", text)}
-              className="border border-gray-300 rounded-lg px-3 py-3 bg-white"
-              placeholder="https://instagram.com/johndoe"
-              autoCapitalize="none"
-            />
+            <Text className="text-sm text-gray-600 mb-2">
+              Status<Text style={{ color: "#FF0000" }}> *</Text>
+            </Text>
+            <TouchableOpacity
+              className="border border-gray-300 rounded-lg px-3 py-3 bg-white flex-row items-center justify-between"
+              onPress={() => setShowStatusPicker(true)}
+            >
+              <Text className={formData.status ? "text-gray-800" : "text-gray-500"}>
+                {formData.status || "Select status"}
+              </Text>
+              <Text className="text-gray-400">▼</Text>
+            </TouchableOpacity>
+            {/* Status Picker Modal */}
+            <Modal
+              visible={showStatusPicker}
+              transparent
+              animationType="fade"
+              onRequestClose={() => setShowStatusPicker(false)}
+            >
+              <Pressable
+                style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.2)" }}
+                onPress={() => setShowStatusPicker(false)}
+              >
+                <View style={{
+                  backgroundColor: "#fff",
+                  margin: 40,
+                  borderRadius: 10,
+                  padding: 20,
+                  elevation: 5,
+                  justifyContent: "center"
+                }}>
+                  {statusOptions.map(option => (
+                    <TouchableOpacity
+                      key={option}
+                      className="py-3"
+                      onPress={() => {
+                        updateField("status", option);
+                        setShowStatusPicker(false);
+                      }}
+                    >
+                      <Text className="text-base">{option}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </Pressable>
+            </Modal>
           </View>
 
           <View className="mb-4">
-            <Text className="text-sm text-gray-600 mb-2">Status<Text style={{ color: "#FF0000" }}> *</Text></Text>
-            <TouchableOpacity className="border border-gray-300 rounded-lg px-3 py-3 bg-white flex-row items-center justify-between">
-              <Text className="text-gray-500">Select status</Text>
+            <Text className="text-sm text-gray-600 mb-2">
+              Pronouns<Text style={{ color: "#FF0000" }}> *</Text>
+            </Text>
+            <TouchableOpacity
+              className="border border-gray-300 rounded-lg px-3 py-3 bg-white flex-row items-center justify-between"
+              onPress={() => setShowPronounsPicker(true)}
+            >
+              <Text className={formData.pronouns ? "text-gray-800" : "text-gray-500"}>
+                {formData.pronouns || "Select pronouns"}
+              </Text>
               <Text className="text-gray-400">▼</Text>
             </TouchableOpacity>
-          </View>
-
-          <View className="mb-4">
-            <Text className="text-sm text-gray-600 mb-2">Pronouns<Text style={{ color: "#FF0000" }}> *</Text></Text>
-            <TouchableOpacity className="border border-gray-300 rounded-lg px-3 py-3 bg-white flex-row items-center justify-between">
-              <Text className="text-gray-500">Select pronouns</Text>
-              <Text className="text-gray-400">▼</Text>
-            </TouchableOpacity>
+            {/* Pronouns Picker Modal */}
+            <Modal
+              visible={showPronounsPicker}
+              transparent
+              animationType="fade"
+              onRequestClose={() => setShowPronounsPicker(false)}
+            >
+              <Pressable
+                style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.2)" }}
+                onPress={() => setShowPronounsPicker(false)}
+              >
+                <View style={{
+                  backgroundColor: "#fff",
+                  margin: 40,
+                  borderRadius: 10,
+                  padding: 20,
+                  elevation: 5,
+                  justifyContent: "center"
+                }}>
+                  {pronounsOptions.map(option => (
+                    <TouchableOpacity
+                      key={option}
+                      className="py-3"
+                      onPress={() => {
+                        updateField("pronouns", option);
+                        setShowPronounsPicker(false);
+                      }}
+                    >
+                      <Text className="text-base">{option}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </Pressable>
+            </Modal>
           </View>
 
           <View className="mb-6">
@@ -326,7 +458,10 @@ export default function AdoptionApplication() {
 
         {/* Action Buttons */}
         <View className="flex-row gap-3 mb-8">
-          <TouchableOpacity className="flex-1 bg-blue-600 rounded-lg py-4">
+          <TouchableOpacity 
+            className="flex-1 bg-blue-600 rounded-lg py-4"
+            onPress={handleSubmit}
+          >
             <Text className="text-white text-center font-semibold text-base">Submit Application</Text>
           </TouchableOpacity>
           <TouchableOpacity className="flex-1 border border-gray-300 rounded-lg py-4">
