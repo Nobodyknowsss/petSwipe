@@ -98,19 +98,57 @@ export default function CreatePost() {
     setSelectedPet(null);
   };
 
-  const handleConfirmPost = () => {
+  const handleConfirmPost = async () => {
     if (!selectedPet) return;
 
-    Alert.alert(
-      "Post Created!",
-      `Your post featuring ${selectedPet.name} will be shared with the community!`,
-      [
-        {
-          text: "OK",
-          onPress: () => router.push("./managePets"),
-        },
-      ]
-    );
+    try {
+      // Get current user
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        Alert.alert("Error", "You must be logged in to create a post.");
+        return;
+      }
+
+      // Save post to Video table
+      const { data, error } = await supabase
+        .from("Video")
+        .insert([
+          {
+            uri: selectedPet.videoUrl,
+            user_id: user.id,
+            description:
+              selectedPet.description ||
+              `Check out my pet ${selectedPet.name}! ${selectedPet.breed}, ${selectedPet.age} years old from ${selectedPet.location}.`,
+          },
+        ])
+        .select();
+
+      if (error) {
+        console.error("Error creating post:", error);
+        Alert.alert("Error", "Failed to create post. Please try again.");
+        return;
+      }
+
+      console.log("Post created successfully:", data);
+
+      Alert.alert(
+        "Post Created!",
+        `Your post featuring ${selectedPet.name} has been shared with the community!`,
+        [
+          {
+            text: "OK",
+            onPress: () => router.push("./managePets"),
+          },
+        ]
+      );
+    } catch (error) {
+      console.error("Error creating post:", error);
+      Alert.alert("Error", "Failed to create post. Please try again.");
+    }
   };
 
   const PetSelectionCard = ({ pet }: { pet: Pet }) => (
