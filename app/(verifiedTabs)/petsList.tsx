@@ -230,7 +230,7 @@ export default function PetsList() {
   );
 
   return (
-    <View className="flex-1 bg-gradient-to-b from-orange-50 to-white">
+    <View className="flex-1 mb-28 bg-gradient-to-b from-orange-50 to-white">
       {/* Header */}
       <View className="px-6 pt-12 pb-6">
         <View className="flex-row items-center mb-6">
@@ -300,24 +300,6 @@ export default function PetsList() {
           <EmptyState />
         )}
       </ScrollView>
-
-      {/* Floating Add Button */}
-      {pets.length > 0 && (
-        <TouchableOpacity
-          className="absolute right-6 bottom-40 justify-center items-center w-16 h-16 rounded-full shadow-lg"
-          style={{
-            backgroundColor: "#FF7200FF",
-            shadowColor: "#FF7200FF",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.3,
-            shadowRadius: 12,
-            elevation: 8,
-          }}
-          onPress={handleAddPet}
-        >
-          <Text className="text-4xl font-bold text-white">+</Text>
-        </TouchableOpacity>
-      )}
     </View>
   );
 }

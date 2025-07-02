@@ -516,8 +516,8 @@ export default function AddPet() {
   };
 
   return (
-    <View className="flex-1 bg-gradient-to-b from-orange-50 to-white">
-      <Header onBack={() => router.back()} />
+    <View className="flex-1 mb-28 bg-gradient-to-b from-orange-50 to-white">
+      <Header onBack={() => router.push("./managePets")} />
 
       <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
         {/* Image Upload Section */}
