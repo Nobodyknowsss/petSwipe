@@ -149,9 +149,9 @@ export default function AdoptersPage() {
   );
 
   const EmptyState = () => (
-    <View className="items-center justify-center py-16">
+    <View className="justify-center items-center py-16">
       <View
-        className="items-center justify-center w-20 h-20 mb-4 rounded-full"
+        className="justify-center items-center mb-4 w-20 h-20 rounded-full"
         style={{ backgroundColor: "rgba(255, 114, 0, 0.1)" }}
       >
         <Text className="text-3xl">👥</Text>
@@ -168,7 +168,7 @@ export default function AdoptersPage() {
   );
 
   return (
-    <View className="flex-1 bg-gradient-to-b from-orange-50 to-white">
+    <View className="flex-1 mb-28 bg-gradient-to-b from-orange-50 to-white">
       {/* Header */}
       <View className="px-6 pt-12 pb-6">
         <Text className="mb-6 text-2xl font-bold text-center text-gray-800">
@@ -180,7 +180,7 @@ export default function AdoptersPage() {
           <TextInput
             placeholder="Search by name, location, or pet interest..."
             placeholderTextColor="#9CA3AF"
-            className="w-full px-5 py-4 pr-12 text-base text-gray-800 bg-white border-2 border-gray-100 rounded-2xl"
+            className="px-5 py-4 pr-12 w-full text-base text-gray-800 bg-white rounded-2xl border-2 border-gray-100"
             style={{
               shadowColor: "#000",
               shadowOffset: { width: 0, height: 2 },
@@ -208,7 +208,7 @@ export default function AdoptersPage() {
       {/* Adopters List */}
       <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
         {loading ? (
-          <View className="items-center justify-center py-16">
+          <View className="justify-center items-center py-16">
             <ActivityIndicator size="large" color="#FF7200FF" />
             <Text className="mt-4 text-gray-600">Loading adopters...</Text>
           </View>

@@ -21,7 +21,7 @@ const DashboardCard = ({
 }) => (
   <TouchableOpacity
     onPress={enabled ? onPress : undefined}
-    className={`p-6 mb-4 bg-white rounded-3xl ${enabled ? "" : "opacity-50"}`}
+    className={`p-6 mb-4 bg-white rounded-3xl ${enabled ? "":"opacity-50"}`}
     style={{
       shadowColor: "#000",
       shadowOffset: { width: 0, height: 4 },
@@ -34,7 +34,7 @@ const DashboardCard = ({
     <View className="items-center">
       {/* Icon */}
       <View
-        className="items-center justify-center w-20 h-20 mb-4 rounded-full"
+        className="justify-center items-center mb-4 w-20 h-20 rounded-full"
         style={{ backgroundColor: `${color}15` }}
       >
         <Text className="text-4xl">{icon}</Text>
@@ -50,7 +50,7 @@ const DashboardCard = ({
 
       {/* Description */}
       <Text
-        className="text-center text-sm leading-5"
+        className="text-sm leading-5 text-center"
         style={{ color: enabled ? "#6B7280" : "#9CA3AF" }}
       >
         {description}
@@ -58,8 +58,8 @@ const DashboardCard = ({
 
       {/* Enabled/Disabled indicator */}
       {!enabled && (
-        <View className="mt-3 px-3 py-1 bg-gray-200 rounded-full">
-          <Text className="text-xs text-gray-500 font-medium">Coming Soon</Text>
+        <View className="px-3 py-1 mt-3 bg-gray-200 rounded-full">
+          <Text className="text-xs font-medium text-gray-500">Coming Soon</Text>
         </View>
       )}
     </View>
@@ -81,7 +81,7 @@ export default function ManagePets() {
   };
 
   return (
-    <View className="flex-1 bg-gradient-to-b from-orange-50 to-white">
+    <View className="flex-1 mb-36 bg-gradient-to-b from-orange-50 to-white">
       {/* Header */}
       <View className="px-6 pt-12 pb-6">
         <Text className="text-3xl font-bold text-center text-gray-800">
