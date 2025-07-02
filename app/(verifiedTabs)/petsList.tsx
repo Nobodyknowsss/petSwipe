@@ -87,8 +87,8 @@ export default function PetsList() {
   };
 
   const handleEditPet = (petId: string) => {
-    // Navigate to edit pet screen
-    console.log("Edit pet:", petId);
+    // Navigate to edit pet screen with pet ID as parameter
+    router.push(`./editPet?petId=${petId}`);
   };
 
   const handleDeletePet = async (petId: string, petName: string) => {
