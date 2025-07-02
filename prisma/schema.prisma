@@ -16,12 +16,12 @@ model User {
   email     String     @unique
   verified  Boolean    @default(false)
   createdAt DateTime   @default(now())
+  chats     Chat[]
+  comments  Comment[]
+  followers Follower[]
+  likes     Like[]
   pets      Pet[]
   videos    Video[]
-  likes     Like[]
-  followers Follower[]
-  comments  Comment[]
-  chats     Chat[]
 }
 
 model Pet {
@@ -35,19 +35,19 @@ model Pet {
   photoUrl    String
   videoUrl    String
   ownerId     String
+  createdAt   DateTime @default(now())
   owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  createdAt    DateTime @default(now())
 }
 
 model Video {
-  id        String    @id @default(dbgenerated("uuid_generate_v4()"))
-  uri       String
+  id          String    @id @default(dbgenerated("uuid_generate_v4()"))
+  uri         String
+  user_id     String
+  createdAt   DateTime  @default(now())
   description String
-  user_id   String
-  user      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  like      Like[]
-  comments  Comment[]
-  createdAt DateTime  @default(now())
+  comments    Comment[]
+  like        Like[]
+  user        User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model Like {
