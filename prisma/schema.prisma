@@ -41,9 +41,7 @@ model Pet {
 
 model Video {
   id        String    @id @default(dbgenerated("uuid_generate_v4()"))
-  title     String
   uri       String
-  thumbnail String?
   description String
   user_id   String
   user      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
