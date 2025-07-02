@@ -122,8 +122,7 @@ export default function ManagePets() {
   };
 
   const handleNavigateToPost = () => {
-    // TODO: Navigate to post screen when implemented
-    console.log("Post feature coming soon!");
+    router.push("./createPost");
   };
 
   return (
@@ -131,7 +130,7 @@ export default function ManagePets() {
       <View className="px-6 pt-12 pb-8">
         <View className="items-center">
           <View
-            className="justify-center items-center mb-4 w-20 h-20 rounded-full"
+            className="justify-center items-center mb-4 w-8 h-8 rounded-full"
             style={{ backgroundColor: "rgba(255, 114, 0, 0.15)" }}
           >
             <Text className="text-3xl">🏠</Text>
@@ -169,7 +168,7 @@ export default function ManagePets() {
             icon="📝"
             onPress={handleNavigateToPost}
             color="#8B5CF6"
-            enabled={false}
+            enabled={true}
           />
         </View>
 
