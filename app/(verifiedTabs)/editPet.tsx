@@ -1,13 +1,12 @@
 import { useFocusEffect } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { VideoView, useVideoPlayer } from "expo-video";
 import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   Image,
-  SafeAreaView,
   ScrollView,
   Text,
   TextInput,
@@ -130,10 +129,14 @@ const SubmitButton = ({
     {uploading ? (
       <View className="flex-row justify-center items-center">
         <ActivityIndicator size="small" color="white" />
-        <Text className="ml-3 text-lg font-bold text-white">Adding Pet...</Text>
+        <Text className="ml-3 text-lg font-bold text-white">
+          Updating Pet...
+        </Text>
       </View>
     ) : (
-      <Text className="text-lg font-bold text-center text-white">Add Pet</Text>
+      <Text className="text-lg font-bold text-center text-white">
+        Update Pet
+      </Text>
     )}
   </TouchableOpacity>
 );
@@ -202,7 +205,7 @@ const MediaUploadSection = ({
             {mediaType === "image" ? "📷" : "🎥"}
           </Text>
           <Text className="font-semibold text-gray-700">
-            Tap to add {mediaType === "image" ? "photo" : "video"}
+            Tap to change {mediaType === "image" ? "photo" : "video"}
           </Text>
           <Text className="mt-1 text-sm text-gray-500">
             {mediaType === "image"
@@ -222,12 +225,13 @@ const Header = ({ onBack }: { onBack: () => void }) => (
       <TouchableOpacity onPress={onBack} className="mr-4">
         <Text className="text-2xl font-bold text-gray-800">←</Text>
       </TouchableOpacity>
-      <Text className="text-2xl font-bold text-gray-800">Add New Pet</Text>
+      <Text className="text-2xl font-bold text-gray-800">Edit Pet</Text>
     </View>
   </View>
 );
 
-export default function AddPet() {
+export default function EditPet() {
+  const { petId } = useLocalSearchParams<{ petId: string }>();
   const [formData, setFormData] = useState<PetFormData>({
     name: "",
     breed: "",
@@ -240,12 +244,67 @@ export default function AddPet() {
   const [selectedVideo, setSelectedVideo] = useState<MediaFile | null>(null);
   const [loading, setLoading] = useState({ image: false, video: false });
   const [uploading, setUploading] = useState(false);
+  const [loadingPet, setLoadingPet] = useState(true);
+  const [originalImageUrl, setOriginalImageUrl] = useState<string>("");
+  const [originalVideoUrl, setOriginalVideoUrl] = useState<string>("");
 
   // Video player for preview
   const videoPlayer = useVideoPlayer(selectedVideo?.uri || "", (player) => {
     player.loop = true;
     player.play();
   });
+
+  // Load existing pet data
+  useEffect(() => {
+    if (petId) {
+      loadPetData();
+    }
+  }, [petId]);
+
+  const loadPetData = async () => {
+    try {
+      setLoadingPet(true);
+      const { data, error } = await supabase
+        .from("Pet")
+        .select("*")
+        .eq("id", petId)
+        .single();
+
+      if (error || !data) {
+        Alert.alert("Error", "Failed to load pet data.");
+        router.back();
+        return;
+      }
+
+      // Populate form with existing data
+      setFormData({
+        name: data.name,
+        breed: data.breed,
+        age: data.age.toString(),
+        gender: data.gender,
+        location: data.location,
+        description: data.description,
+      });
+
+      // Set original URLs for comparison
+      setOriginalImageUrl(data.photoUrl);
+      setOriginalVideoUrl(data.videoUrl);
+
+      // Set existing media for display
+      if (data.photoUrl) {
+        setSelectedImage({ uri: data.photoUrl, type: "image" });
+      }
+      if (data.videoUrl) {
+        setSelectedVideo({ uri: data.videoUrl, type: "video" });
+      }
+    } catch (error) {
+      console.error("Error loading pet data:", error);
+      Alert.alert("Error", "Failed to load pet data.");
+      router.back();
+    } finally {
+      setLoadingPet(false);
+    }
+  };
 
   // Cleanup video player when component unmounts or video changes
   useEffect(() => {
@@ -343,7 +402,6 @@ export default function AddPet() {
     });
 
     if (!result.canceled && result.assets[0]) {
-      // Filter based on the desired media type
       const asset = result.assets[0];
       const assetType = asset.type === "video" ? "video" : "image";
 
@@ -368,7 +426,6 @@ export default function AddPet() {
     });
 
     if (!result.canceled && result.assets[0]) {
-      // Filter based on the desired media type
       const asset = result.assets[0];
       const assetType = asset.type === "video" ? "video" : "image";
 
@@ -390,14 +447,11 @@ export default function AddPet() {
     setLoading((prev) => ({ ...prev, [mediaType]: true }));
     try {
       const finalUri = asset.uri;
-
-      // Check initial file size
       const fileSize = await checkFileSize(asset.uri);
       const fileSizeMB = fileSize / (1024 * 1024);
 
       console.log(`Selected ${mediaType} size: ${fileSizeMB.toFixed(2)}MB`);
 
-      // Warn user about large files
       if (fileSizeMB > 45) {
         Alert.alert(
           "Large File Warning",
@@ -437,12 +491,10 @@ export default function AddPet() {
     finalUri: string
   ) => {
     try {
-      // Compress image if it's an image
       if (mediaType === "image") {
         finalUri = await compressImage(asset.uri);
       }
 
-      // Stop current video if selecting a new video
       if (mediaType === "video" && videoPlayer && selectedVideo) {
         try {
           videoPlayer.pause();
@@ -513,28 +565,20 @@ export default function AddPet() {
 
     setUploading(true);
     try {
-      // Upload media to Supabase
-      let photoUrl = "";
-      let videoUrl = "";
+      let photoUrl = originalImageUrl;
+      let videoUrl = originalVideoUrl;
 
-      if (selectedImage) {
+      // Upload new image if changed
+      if (selectedImage && selectedImage.uri !== originalImageUrl) {
         photoUrl = await uploadMediaToSupabase(selectedImage.uri, "image");
       }
 
-      if (selectedVideo) {
+      // Upload new video if changed
+      if (selectedVideo && selectedVideo.uri !== originalVideoUrl) {
         videoUrl = await uploadMediaToSupabase(selectedVideo.uri, "video");
       }
 
-      // Get current user
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        Alert.alert("Error", "You must be logged in to add a pet.");
-        return;
-      }
-
-      // Save pet data to database
+      // Update pet data in database
       const petData = {
         name: formData.name.trim(),
         breed: formData.breed.trim(),
@@ -544,24 +588,18 @@ export default function AddPet() {
         description: formData.description.trim(),
         photoUrl,
         videoUrl,
-        ownerId: user.id,
       };
 
-      // Here you would typically use your database client (Prisma) to save the pet
-      // For now, I'll use Supabase client as an example
-      const { error } = await supabase.from("Pet").insert([petData]);
+      const { error } = await supabase
+        .from("Pet")
+        .update(petData)
+        .eq("id", petId);
 
       if (error) throw error;
 
-      Alert.alert("Success!", "Your pet has been added successfully.", [
+      Alert.alert("Success!", "Your pet has been updated successfully.", [
         {
-          text: "Add Another Pet",
-          onPress: () => {
-            resetForm();
-          },
-        },
-        {
-          text: "Go Back",
+          text: "OK",
           onPress: () => {
             try {
               if (videoPlayer && selectedVideo) {
@@ -570,14 +608,13 @@ export default function AddPet() {
             } catch (error) {
               console.log("Video player success error:", error);
             }
-            resetForm();
             router.back();
           },
         },
       ]);
     } catch (error) {
-      console.error("Error adding pet:", error);
-      Alert.alert("Error", "Failed to add pet. Please try again.");
+      console.error("Error updating pet:", error);
+      Alert.alert("Error", "Failed to update pet. Please try again.");
     } finally {
       setUploading(false);
     }
@@ -585,34 +622,6 @@ export default function AddPet() {
 
   const updateFormData = (field: keyof PetFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const resetForm = () => {
-    // Reset form data
-    setFormData({
-      name: "",
-      breed: "",
-      age: "",
-      gender: "",
-      location: "",
-      description: "",
-    });
-
-    // Clear selected media
-    setSelectedImage(null);
-    setSelectedVideo(null);
-
-    // Reset loading states
-    setLoading({ image: false, video: false });
-
-    // Pause video player if active
-    try {
-      if (videoPlayer && selectedVideo) {
-        videoPlayer.pause();
-      }
-    } catch (error) {
-      console.log("Video player reset error:", error);
-    }
   };
 
   const handleBack = () => {
@@ -623,92 +632,96 @@ export default function AddPet() {
     } catch (error) {
       console.log("Video player back error:", error);
     }
-    router.push("./managePets");
+    router.push("./petsList");
   };
 
+  if (loadingPet) {
+    return (
+      <View className="flex-1 justify-center items-center bg-gradient-to-b from-orange-50 to-white">
+        <ActivityIndicator size="large" color="#FF7200FF" />
+        <Text className="mt-4 text-gray-600">Loading pet data...</Text>
+      </View>
+    );
+  }
+
   return (
-    <SafeAreaView className="flex-1 bg-gradient-to-b from-orange-50 to-white">
-      <View className="flex-1 mb-28 bg-gradient-to-b from-orange-50 to-white">
-        <Header onBack={handleBack} />
+    <View className="flex-1 mb-28 bg-gradient-to-b from-orange-50 to-white">
+      <Header onBack={handleBack} />
 
-        <ScrollView
-          className="flex-1 px-6"
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Image Upload Section */}
-          <MediaUploadSection
-            mediaType="image"
-            selectedMedia={selectedImage}
-            onPress={() => pickMedia("image")}
-            loading={loading.image}
+      <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
+        {/* Image Upload Section */}
+        <MediaUploadSection
+          mediaType="image"
+          selectedMedia={selectedImage}
+          onPress={() => pickMedia("image")}
+          loading={loading.image}
+        />
+
+        {/* Video Upload Section */}
+        <MediaUploadSection
+          mediaType="video"
+          selectedMedia={selectedVideo}
+          onPress={() => pickMedia("video")}
+          loading={loading.video}
+          videoPlayer={videoPlayer}
+        />
+
+        {/* Form Fields */}
+        <View className="space-y-5">
+          <FormInput
+            label="Pet Name"
+            placeholder="Enter pet's name"
+            value={formData.name}
+            onChangeText={(value) => updateFormData("name", value)}
+            required
           />
 
-          {/* Video Upload Section */}
-          <MediaUploadSection
-            mediaType="video"
-            selectedMedia={selectedVideo}
-            onPress={() => pickMedia("video")}
-            loading={loading.video}
-            videoPlayer={videoPlayer}
+          <FormInput
+            label="Breed"
+            placeholder="Enter breed"
+            value={formData.breed}
+            onChangeText={(value) => updateFormData("breed", value)}
+            required
           />
 
-          {/* Form Fields */}
-          <View className="space-y-5">
-            <FormInput
-              label="Pet Name"
-              placeholder="Enter pet's name"
-              value={formData.name}
-              onChangeText={(value) => updateFormData("name", value)}
-              required
-            />
-
-            <FormInput
-              label="Breed"
-              placeholder="Enter breed"
-              value={formData.breed}
-              onChangeText={(value) => updateFormData("breed", value)}
-              required
-            />
-
-            {/* Age and Gender Row */}
-            <View className="flex-row space-x-4">
-              <View className="flex-1">
-                <FormInput
-                  label="Age (years)"
-                  placeholder="0"
-                  value={formData.age}
-                  onChangeText={(value) => updateFormData("age", value)}
-                  keyboardType="numeric"
-                  required
-                />
-              </View>
-
-              <GenderSelector
-                selectedGender={formData.gender}
-                onGenderSelect={(gender) => updateFormData("gender", gender)}
+          {/* Age and Gender Row */}
+          <View className="flex-row space-x-4">
+            <View className="flex-1">
+              <FormInput
+                label="Age (years)"
+                placeholder="0"
+                value={formData.age}
+                onChangeText={(value) => updateFormData("age", value)}
+                keyboardType="numeric"
+                required
               />
             </View>
 
-            <FormInput
-              label="Location"
-              placeholder="Enter location"
-              value={formData.location}
-              onChangeText={(value) => updateFormData("location", value)}
-              required
-            />
-
-            <FormInput
-              label="Description"
-              placeholder="Tell us about your pet..."
-              value={formData.description}
-              onChangeText={(value) => updateFormData("description", value)}
-              multiline
+            <GenderSelector
+              selectedGender={formData.gender}
+              onGenderSelect={(gender) => updateFormData("gender", gender)}
             />
           </View>
 
-          <SubmitButton onPress={handleSubmit} uploading={uploading} />
-        </ScrollView>
-      </View>
-    </SafeAreaView>
+          <FormInput
+            label="Location"
+            placeholder="Enter location"
+            value={formData.location}
+            onChangeText={(value) => updateFormData("location", value)}
+            required
+          />
+
+          <FormInput
+            label="Description"
+            placeholder="Tell us about your pet..."
+            value={formData.description}
+            onChangeText={(value) => updateFormData("description", value)}
+            multiline
+          />
+        </View>
+
+        <SubmitButton onPress={handleSubmit} uploading={uploading} />
+      </ScrollView>
+    </View>
   );
 }
