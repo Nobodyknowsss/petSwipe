@@ -1,9 +1,9 @@
 "use client";
 
 import { router } from "expo-router";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 
-// Enhanced Dashboard Card Component
+// Compact Dashboard Card Component
 const DashboardCard = ({
   title,
   description,
@@ -21,37 +21,37 @@ const DashboardCard = ({
 }) => (
   <TouchableOpacity
     onPress={enabled ? onPress : undefined}
-    className={`p-6 mb-6 bg-white rounded-3xl ${enabled ? "":"opacity-60"}`}
+    className={`p-3 mb-3 bg-white rounded-2xl ${enabled ? "":"opacity-60"}`}
     style={{
       shadowColor: enabled ? color : "#000",
-      shadowOffset: { width: 0, height: 6 },
-      shadowOpacity: enabled ? 0.15 : 0.05,
-      shadowRadius: 16,
-      elevation: 8,
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: enabled ? 0.1 : 0.03,
+      shadowRadius: 8,
+      elevation: 4,
     }}
     disabled={!enabled}
   >
     <View className="items-center">
       <View
-        className="justify-center items-center mb-5 w-24 h-24 rounded-full"
+        className="justify-center items-center mb-2 w-12 h-12 rounded-full"
         style={{
           backgroundColor: enabled ? `${color}20` : "#F3F4F6",
-          borderWidth: 2,
+          borderWidth: 1,
           borderColor: enabled ? `${color}30` : "#E5E7EB",
         }}
       >
-        <Text className="text-5xl">{icon}</Text>
+        <Text className="text-2xl">{icon}</Text>
       </View>
 
       <Text
-        className="mb-3 text-xl font-bold text-center"
+        className="mb-1 text-sm font-bold text-center"
         style={{ color: enabled ? "#1F2937" : "#9CA3AF" }}
       >
         {title}
       </Text>
 
       <Text
-        className="px-2 text-sm leading-6 text-center"
+        className="px-1 text-xs leading-4 text-center"
         style={{ color: enabled ? "#6B7280" : "#9CA3AF" }}
       >
         {description}
@@ -59,7 +59,7 @@ const DashboardCard = ({
 
       {!enabled && (
         <View
-          className="px-4 py-2 mt-4 rounded-full"
+          className="px-2 py-1 mt-2 rounded-full"
           style={{ backgroundColor: "rgba(156, 163, 175, 0.2)" }}
         >
           <Text className="text-xs font-semibold text-gray-500">
@@ -70,7 +70,7 @@ const DashboardCard = ({
 
       {enabled && (
         <View
-          className="px-4 py-2 mt-4 rounded-full"
+          className="px-2 py-1 mt-2 rounded-full"
           style={{ backgroundColor: `${color}15` }}
         >
           <Text className="text-xs font-semibold" style={{ color: color }}>
@@ -82,6 +82,7 @@ const DashboardCard = ({
   </TouchableOpacity>
 );
 
+// Compact Stats Card Component
 const StatsCard = ({
   value,
   label,
@@ -92,20 +93,20 @@ const StatsCard = ({
   color: string;
 }) => (
   <View
-    className="flex-1 p-5 mx-1 bg-white rounded-2xl"
+    className="flex-1 p-3 mx-1 bg-white rounded-xl"
     style={{
       shadowColor: color,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.1,
-      shadowRadius: 12,
-      elevation: 4,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.08,
+      shadowRadius: 6,
+      elevation: 2,
     }}
   >
     <View className="items-center">
-      <Text className="mb-1 text-3xl font-bold" style={{ color: color }}>
+      <Text className="mb-1 text-xl font-bold" style={{ color: color }}>
         {value}
       </Text>
-      <Text className="text-sm font-medium text-center text-gray-600">
+      <Text className="text-xs font-medium text-center text-gray-600">
         {label}
       </Text>
     </View>
@@ -127,28 +128,31 @@ export default function ManagePets() {
 
   return (
     <View className="flex-1 mb-36 bg-gradient-to-b from-orange-50 to-white">
-      <View className="px-6 pt-12 pb-8">
+      {/* Compact Header */}
+      <View className="px-6 pt-8 pb-4">
         <View className="items-center">
           <View
-            className="justify-center items-center mb-4 w-8 h-8 rounded-full"
+            className="justify-center items-center mb-2 w-12 h-12 rounded-full"
             style={{ backgroundColor: "rgba(255, 114, 0, 0.15)" }}
           >
-            <Text className="text-3xl">🏠</Text>
+            <Text className="text-xl">🏠</Text>
           </View>
-          <Text className="mb-2 text-3xl font-bold text-center text-gray-800">
+          <Text className="mb-1 text-xl font-bold text-center text-gray-800">
             Pet Management
           </Text>
-          <Text className="px-4 leading-5 text-center text-gray-600">
-            Everything you need to manage your beloved pets in one place
+          <Text className="px-4 text-sm leading-4 text-center text-gray-600">
+            Manage your beloved pets in one place
           </Text>
         </View>
       </View>
 
-      <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
-        <View className="mb-8">
+      {/* Main Content - No Scroll */}
+      <View className="flex-1 px-6">
+        {/* Compact Action Cards */}
+        <View className="flex-1 mb-4">
           <DashboardCard
             title="My Pets"
-            description="View, edit, and manage all your registered pets with ease"
+            description="View and manage all your pets"
             icon="🐾"
             onPress={handleNavigateToPets}
             color="#FF7200FF"
@@ -156,7 +160,7 @@ export default function ManagePets() {
 
           <DashboardCard
             title="Add New Pet"
-            description="Register a new furry friend with photos, videos and details"
+            description="Register a new pet with details"
             icon="➕"
             onPress={handleNavigateToAddPet}
             color="#10B981"
@@ -164,7 +168,7 @@ export default function ManagePets() {
 
           <DashboardCard
             title="Create Post"
-            description="Share amazing stories and updates about your pets with the community"
+            description="Share stories about your pets"
             icon="📝"
             onPress={handleNavigateToPost}
             color="#8B5CF6"
@@ -172,8 +176,9 @@ export default function ManagePets() {
           />
         </View>
 
-        <View className="mb-8">
-          <Text className="mb-5 text-xl font-bold text-gray-800">
+        {/* Compact Quick Stats */}
+        <View className="mb-4">
+          <Text className="mb-3 text-base font-bold text-gray-800">
             Quick Overview
           </Text>
           <View className="flex-row">
@@ -181,8 +186,7 @@ export default function ManagePets() {
             <StatsCard value="0" label="Posts Created" color="#10B981" />
           </View>
         </View>
-        <View className="h-8" />
-      </ScrollView>
+      </View>
     </View>
   );
 }

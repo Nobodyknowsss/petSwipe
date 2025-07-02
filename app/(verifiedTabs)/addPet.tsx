@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  SafeAreaView,
   ScrollView,
   Text,
   TextInput,
@@ -626,83 +627,88 @@ export default function AddPet() {
   };
 
   return (
-    <View className="flex-1 mb-28 bg-gradient-to-b from-orange-50 to-white">
-      <Header onBack={handleBack} />
+    <SafeAreaView className="flex-1 bg-gradient-to-b from-orange-50 to-white">
+      <View className="flex-1 mb-28 bg-gradient-to-b from-orange-50 to-white">
+        <Header onBack={handleBack} />
 
-      <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
-        {/* Image Upload Section */}
-        <MediaUploadSection
-          mediaType="image"
-          selectedMedia={selectedImage}
-          onPress={() => pickMedia("image")}
-          loading={loading.image}
-        />
-
-        {/* Video Upload Section */}
-        <MediaUploadSection
-          mediaType="video"
-          selectedMedia={selectedVideo}
-          onPress={() => pickMedia("video")}
-          loading={loading.video}
-          videoPlayer={videoPlayer}
-        />
-
-        {/* Form Fields */}
-        <View className="space-y-5">
-          <FormInput
-            label="Pet Name"
-            placeholder="Enter pet's name"
-            value={formData.name}
-            onChangeText={(value) => updateFormData("name", value)}
-            required
+        <ScrollView
+          className="flex-1 px-6"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Image Upload Section */}
+          <MediaUploadSection
+            mediaType="image"
+            selectedMedia={selectedImage}
+            onPress={() => pickMedia("image")}
+            loading={loading.image}
           />
 
-          <FormInput
-            label="Breed"
-            placeholder="Enter breed"
-            value={formData.breed}
-            onChangeText={(value) => updateFormData("breed", value)}
-            required
+          {/* Video Upload Section */}
+          <MediaUploadSection
+            mediaType="video"
+            selectedMedia={selectedVideo}
+            onPress={() => pickMedia("video")}
+            loading={loading.video}
+            videoPlayer={videoPlayer}
           />
 
-          {/* Age and Gender Row */}
-          <View className="flex-row space-x-4">
-            <View className="flex-1">
-              <FormInput
-                label="Age (years)"
-                placeholder="0"
-                value={formData.age}
-                onChangeText={(value) => updateFormData("age", value)}
-                keyboardType="numeric"
-                required
+          {/* Form Fields */}
+          <View className="space-y-5">
+            <FormInput
+              label="Pet Name"
+              placeholder="Enter pet's name"
+              value={formData.name}
+              onChangeText={(value) => updateFormData("name", value)}
+              required
+            />
+
+            <FormInput
+              label="Breed"
+              placeholder="Enter breed"
+              value={formData.breed}
+              onChangeText={(value) => updateFormData("breed", value)}
+              required
+            />
+
+            {/* Age and Gender Row */}
+            <View className="flex-row space-x-4">
+              <View className="flex-1">
+                <FormInput
+                  label="Age (years)"
+                  placeholder="0"
+                  value={formData.age}
+                  onChangeText={(value) => updateFormData("age", value)}
+                  keyboardType="numeric"
+                  required
+                />
+              </View>
+
+              <GenderSelector
+                selectedGender={formData.gender}
+                onGenderSelect={(gender) => updateFormData("gender", gender)}
               />
             </View>
 
-            <GenderSelector
-              selectedGender={formData.gender}
-              onGenderSelect={(gender) => updateFormData("gender", gender)}
+            <FormInput
+              label="Location"
+              placeholder="Enter location"
+              value={formData.location}
+              onChangeText={(value) => updateFormData("location", value)}
+              required
+            />
+
+            <FormInput
+              label="Description"
+              placeholder="Tell us about your pet..."
+              value={formData.description}
+              onChangeText={(value) => updateFormData("description", value)}
+              multiline
             />
           </View>
 
-          <FormInput
-            label="Location"
-            placeholder="Enter location"
-            value={formData.location}
-            onChangeText={(value) => updateFormData("location", value)}
-            required
-          />
-
-          <FormInput
-            label="Description"
-            placeholder="Tell us about your pet..."
-            value={formData.description}
-            onChangeText={(value) => updateFormData("description", value)}
-            multiline
-          />
-        </View>
-
-        <SubmitButton onPress={handleSubmit} uploading={uploading} />
-      </ScrollView>
-    </View>
+          <SubmitButton onPress={handleSubmit} uploading={uploading} />
+        </ScrollView>
+      </View>
+    </SafeAreaView>
   );
 }

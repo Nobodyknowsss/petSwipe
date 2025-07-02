@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  SafeAreaView,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -37,7 +38,6 @@ export default function CreatePost() {
   // Video player for the selected pet
   const videoPlayer = useVideoPlayer(selectedPet?.videoUrl || "", (player) => {
     player.loop = false;
-    player.play = false;
   });
 
   const fetchPets = async () => {
@@ -186,195 +186,196 @@ export default function CreatePost() {
   // Step 1: Pet Selection
   if (step === 1) {
     return (
-      <View className="flex-1 mb-28 bg-gradient-to-b from-purple-50 to-white">
-        {/* Header */}
-        <View className="px-6 pt-8 pb-4">
-          <View className="flex-row items-center mb-6">
-            <TouchableOpacity
-              onPress={() => router.push("./managePets")}
-              className="mr-4"
-            >
-              <Text className="text-2xl font-bold text-gray-800">←</Text>
-            </TouchableOpacity>
-            <Text className="text-2xl font-bold text-gray-800">
-              Create Post
-            </Text>
+      <SafeAreaView className="flex-1 bg-gradient-to-b from-purple-50 to-white">
+        <View className="flex-1 mb-28">
+          <View className="px-6 pt-8 pb-4">
+            <View className="flex-row items-center mb-4">
+              <TouchableOpacity
+                onPress={() => router.push("./managePets")}
+                className="mr-4"
+              >
+                <Text className="text-2xl font-bold text-gray-800">←</Text>
+              </TouchableOpacity>
+              <Text className="text-2xl font-bold text-gray-800">
+                Create Post
+              </Text>
+            </View>
+
+            <View className="items-center mb-4">
+              <View
+                className="justify-center items-center mb-3 w-8 h-8 rounded-full"
+                style={{ backgroundColor: "rgba(139, 92, 246, 0.15)" }}
+              >
+                <Text className="text-xl">📝</Text>
+              </View>
+              <Text className="mb-2 text-lg font-bold text-center text-gray-800">
+                Choose Your Pet
+              </Text>
+              <Text className="px-4 text-center text-gray-600">
+                Select which pet you would like to feature in your post
+              </Text>
+            </View>
           </View>
 
-          <View className="items-center mb-6">
-            <View
-              className="justify-center items-center mb-4 w-16 h-16 rounded-full"
-              style={{ backgroundColor: "rgba(139, 92, 246, 0.15)" }}
-            >
-              <Text className="text-2xl">📝</Text>
-            </View>
-            <Text className="mb-2 text-lg font-bold text-center text-gray-800">
-              Choose Your Pet
-            </Text>
-            <Text className="px-4 text-center text-gray-600">
-              Select which pet you would like to feature in your post
-            </Text>
-          </View>
+          <ScrollView
+            className="flex-1 px-6"
+            showsVerticalScrollIndicator={false}
+          >
+            {loading ? (
+              <View className="justify-center items-center py-16">
+                <ActivityIndicator size="large" color="#8B5CF6" />
+                <Text className="mt-4 text-gray-600">Loading pets...</Text>
+              </View>
+            ) : pets.length > 0 ? (
+              <>
+                {pets.map((pet) => (
+                  <PetSelectionCard key={pet.id} pet={pet} />
+                ))}
+                <View className="h-20" />
+              </>
+            ) : (
+              <EmptyState />
+            )}
+          </ScrollView>
         </View>
-
-        {/* Pet List */}
-        <ScrollView
-          className="flex-1 px-6"
-          showsVerticalScrollIndicator={false}
-        >
-          {loading ? (
-            <View className="justify-center items-center py-16">
-              <ActivityIndicator size="large" color="#8B5CF6" />
-              <Text className="mt-4 text-gray-600">Loading pets...</Text>
-            </View>
-          ) : pets.length > 0 ? (
-            <>
-              {pets.map((pet) => (
-                <PetSelectionCard key={pet.id} pet={pet} />
-              ))}
-              <View className="h-20" />
-            </>
-          ) : (
-            <EmptyState />
-          )}
-        </ScrollView>
-      </View>
+      </SafeAreaView>
     );
   }
 
   // Step 2: Preview & Confirm
   return (
-    <View className="flex-1 mb-28 bg-gradient-to-b from-purple-50 to-white">
-      {/* Header */}
-      <View className="px-6 pt-8 pb-4">
-        <View className="flex-row items-center mb-6">
-          <TouchableOpacity onPress={handleBackToSelection} className="mr-4">
-            <Text className="text-2xl font-bold text-gray-800">←</Text>
-          </TouchableOpacity>
-          <Text className="text-2xl font-bold text-gray-800">Preview Post</Text>
-        </View>
-
-        <View className="items-center mb-6">
-          <View
-            className="justify-center items-center mb-4 w-16 h-16 rounded-full"
-            style={{ backgroundColor: "rgba(139, 92, 246, 0.15)" }}
-          >
-            <Text className="text-2xl">👀</Text>
+    <SafeAreaView className="flex-1 bg-gradient-to-b from-purple-50 to-white">
+      <View className="flex-1 mb-28">
+        <View className="px-6 pt-8 pb-2">
+          <View className="flex-row items-center mb-6">
+            <TouchableOpacity onPress={handleBackToSelection} className="mr-4">
+              <Text className="text-2xl font-bold text-gray-800">←</Text>
+            </TouchableOpacity>
+            <Text className="text-2xl font-bold text-gray-800">
+              Preview Post
+            </Text>
           </View>
-          <Text className="mb-2 text-lg font-bold text-center text-gray-800">
-            Ready to Share?
-          </Text>
-          <Text className="px-4 text-center text-gray-600">
-            Review your post before sharing with the community
-          </Text>
-        </View>
-      </View>
 
-      <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
-        {selectedPet && (
-          <View
-            className="p-6 mb-6 bg-white rounded-3xl"
-            style={{
-              shadowColor: "#8B5CF6",
-              shadowOffset: { width: 0, height: 6 },
-              shadowOpacity: 0.15,
-              shadowRadius: 16,
-              elevation: 8,
-            }}
-          >
-            {/* Pet Header */}
-            <View className="flex-row items-center mb-6">
-              <Image
-                source={{
-                  uri:
-                    selectedPet.photoUrl ||
-                    "https://via.placeholder.com/60x60/F3F4F6/9CA3AF?text=Pet",
-                }}
-                style={{ width: 60, height: 60 }}
-                className="mr-4 bg-gray-100 rounded-full"
-              />
-              <View className="flex-1">
-                <Text className="text-xl font-bold text-gray-800">
-                  {selectedPet.name}
-                </Text>
-                <Text className="text-sm text-gray-600">
-                  {selectedPet.breed} • {selectedPet.age} years old
-                </Text>
-              </View>
+          <View className="items-center mb-2">
+            <View
+              className="justify-center items-center mb-4 w-8 h-8 rounded-full"
+              style={{ backgroundColor: "rgba(139, 92, 246, 0.15)" }}
+            >
+              <Text className="text-2xl">👀</Text>
             </View>
+            <Text className="mb-2 text-lg font-bold text-center text-gray-800">
+              Ready to Share?
+            </Text>
+            <Text className="px-4 text-center text-gray-600">
+              Review your post before sharing with the community
+            </Text>
+          </View>
+        </View>
 
-            {/* Video Preview */}
-            {selectedPet.videoUrl && (
+        <ScrollView
+          className="flex-1 px-6"
+          showsVerticalScrollIndicator={false}
+        >
+          {selectedPet && (
+            <View
+              className="p-6 mb-6 bg-white rounded-3xl"
+              style={{
+                shadowColor: "#8B5CF6",
+                shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.15,
+                shadowRadius: 16,
+                elevation: 8,
+              }}
+            >
+              <View className="flex-row items-center mb-6">
+                <Image
+                  source={{
+                    uri:
+                      selectedPet.photoUrl ||
+                      "https://via.placeholder.com/60x60/F3F4F6/9CA3AF?text=Pet",
+                  }}
+                  style={{ width: 60, height: 60 }}
+                  className="mr-4 bg-gray-100 rounded-full"
+                />
+                <View className="flex-1">
+                  <Text className="text-xl font-bold text-gray-800">
+                    {selectedPet.name}
+                  </Text>
+                  <Text className="text-sm text-gray-600">
+                    {selectedPet.breed} • {selectedPet.age} years old
+                  </Text>
+                </View>
+              </View>
+
+              {selectedPet.videoUrl && (
+                <View className="mb-6">
+                  <Text className="mb-3 text-base font-semibold text-gray-800">
+                    Featured Video
+                  </Text>
+                  <View className="overflow-hidden rounded-2xl">
+                    <VideoView
+                      style={{ width: "100%", height: 300 }}
+                      player={videoPlayer}
+                      allowsFullscreen
+                      allowsPictureInPicture
+                    />
+                  </View>
+                </View>
+              )}
+
               <View className="mb-6">
                 <Text className="mb-3 text-base font-semibold text-gray-800">
-                  Featured Video
+                  Description:
                 </Text>
-                <View className="overflow-hidden rounded-2xl">
-                  <VideoView
-                    style={{ width: "100%", height: 300 }}
-                    player={videoPlayer}
-                    allowsFullscreen
-                    allowsPictureInPicture
-                  />
+                <View
+                  className="p-4 rounded-xl"
+                  style={{ backgroundColor: "#F9FAFB" }}
+                >
+                  <Text className="leading-6 text-gray-700">
+                    {selectedPet.description || "No description available."}
+                  </Text>
                 </View>
               </View>
-            )}
 
-            {/* Description */}
-            <View className="mb-6">
-              <Text className="mb-3 text-base font-semibold text-gray-800">
-                Description
-              </Text>
-              <View
-                className="p-4 rounded-xl"
-                style={{ backgroundColor: "#F9FAFB" }}
+              <View className="p-4 mb-6 bg-purple-50 rounded-xl">
+                <Text className="mb-3 text-base font-semibold text-gray-800">
+                  Pet Details
+                </Text>
+                <View className="space-y-2">
+                  <View className="flex-row">
+                    <Text className="w-20 text-sm font-medium text-gray-600">
+                      Gender:
+                    </Text>
+                    <Text className="text-sm text-gray-800">
+                      {selectedPet.gender}
+                    </Text>
+                  </View>
+                  <View className="flex-row">
+                    <Text className="w-20 text-sm font-medium text-gray-600">
+                      Location:
+                    </Text>
+                    <Text className="text-sm text-gray-800">
+                      {selectedPet.location}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+
+              <TouchableOpacity
+                onPress={handleConfirmPost}
+                className="py-4 rounded-2xl"
+                style={{ backgroundColor: "#8B5CF6" }}
               >
-                <Text className="leading-6 text-gray-700">
-                  {selectedPet.description || "No description available."}
+                <Text className="text-base font-bold text-center text-white">
+                  Confirm & Share Post 🚀
                 </Text>
-              </View>
+              </TouchableOpacity>
             </View>
+          )}
 
-            {/* Pet Details */}
-            <View className="p-4 mb-6 bg-purple-50 rounded-xl">
-              <Text className="mb-3 text-base font-semibold text-gray-800">
-                Pet Details
-              </Text>
-              <View className="space-y-2">
-                <View className="flex-row">
-                  <Text className="w-20 text-sm font-medium text-gray-600">
-                    Gender:
-                  </Text>
-                  <Text className="text-sm text-gray-800">
-                    {selectedPet.gender}
-                  </Text>
-                </View>
-                <View className="flex-row">
-                  <Text className="w-20 text-sm font-medium text-gray-600">
-                    Location:
-                  </Text>
-                  <Text className="text-sm text-gray-800">
-                    {selectedPet.location}
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Confirm Button */}
-            <TouchableOpacity
-              onPress={handleConfirmPost}
-              className="py-4 rounded-2xl"
-              style={{ backgroundColor: "#8B5CF6" }}
-            >
-              <Text className="text-base font-bold text-center text-white">
-                Confirm & Share Post 🚀
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        <View className="h-20" />
-      </ScrollView>
-    </View>
+          <View className="h-20" />
+        </ScrollView>
+      </View>
+    </SafeAreaView>
   );
 }

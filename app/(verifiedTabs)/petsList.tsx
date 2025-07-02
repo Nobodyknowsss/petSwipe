@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  SafeAreaView,
   ScrollView,
   Text,
   TextInput,
@@ -230,76 +231,81 @@ export default function PetsList() {
   );
 
   return (
-    <View className="flex-1 mb-28 bg-gradient-to-b from-orange-50 to-white">
-      {/* Header */}
-      <View className="px-6 pt-12 pb-6">
-        <View className="flex-row items-center mb-6">
-          <TouchableOpacity
-            onPress={() => router.push("./managePets")}
-            className="mr-4"
-          >
-            <Text className="text-2xl font-bold text-gray-800">←</Text>
-          </TouchableOpacity>
-          <Text className="text-2xl font-bold text-gray-800">My Pets</Text>
-          <TouchableOpacity
-            onPress={handleRefresh}
-            className="ml-auto"
-            disabled={refreshing}
-          >
-            <Text className="text-sm font-medium text-orange-500">
-              {refreshing ? "⟳" : "Refresh"}
+    <SafeAreaView className="flex-1 bg-gradient-to-b from-orange-50 to-white">
+      <View className="flex-1 mb-28 bg-gradient-to-b from-orange-50 to-white">
+        {/* Header */}
+        <View className="px-6 pt-12 pb-6">
+          <View className="flex-row items-center mb-6">
+            <TouchableOpacity
+              onPress={() => router.push("./managePets")}
+              className="mr-4"
+            >
+              <Text className="text-2xl font-bold text-gray-800">←</Text>
+            </TouchableOpacity>
+            <Text className="text-2xl font-bold text-gray-800">My Pets</Text>
+            <TouchableOpacity
+              onPress={handleRefresh}
+              className="ml-auto"
+              disabled={refreshing}
+            >
+              <Text className="text-sm font-medium text-orange-500">
+                {refreshing ? "⟳" : "Refresh"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Search Bar */}
+          <View className="relative">
+            <TextInput
+              placeholder="Search pets by name or breed..."
+              placeholderTextColor="#9CA3AF"
+              className="px-5 py-4 pr-12 w-full text-base text-gray-800 bg-white rounded-2xl border-2 border-gray-100"
+              style={{
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.05,
+                shadowRadius: 8,
+                elevation: 2,
+              }}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+            <View className="absolute top-4 right-4">
+              <Text className="text-lg text-gray-400">🔍</Text>
+            </View>
+          </View>
+
+          {/* Results Counter */}
+          {searchQuery && (
+            <Text className="mt-3 text-sm text-gray-600">
+              {filteredPets.length} pet{filteredPets.length !== 1 ? "s" : ""}{" "}
+              found
             </Text>
-          </TouchableOpacity>
+          )}
         </View>
 
-        {/* Search Bar */}
-        <View className="relative">
-          <TextInput
-            placeholder="Search pets by name or breed..."
-            placeholderTextColor="#9CA3AF"
-            className="px-5 py-4 pr-12 w-full text-base text-gray-800 bg-white rounded-2xl border-2 border-gray-100"
-            style={{
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.05,
-              shadowRadius: 8,
-              elevation: 2,
-            }}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-          <View className="absolute top-4 right-4">
-            <Text className="text-lg text-gray-400">🔍</Text>
-          </View>
-        </View>
-
-        {/* Results Counter */}
-        {searchQuery && (
-          <Text className="mt-3 text-sm text-gray-600">
-            {filteredPets.length} pet{filteredPets.length !== 1 ? "s" : ""}{" "}
-            found
-          </Text>
-        )}
+        {/* Pet List */}
+        <ScrollView
+          className="flex-1 px-6"
+          showsVerticalScrollIndicator={false}
+        >
+          {loading ? (
+            <View className="justify-center items-center py-16">
+              <ActivityIndicator size="large" color="#FF7200FF" />
+              <Text className="mt-4 text-gray-600">Loading pets...</Text>
+            </View>
+          ) : filteredPets.length > 0 ? (
+            <>
+              {filteredPets.map((pet) => (
+                <PetCard key={pet.id} pet={pet} />
+              ))}
+              <View className="h-20" />
+            </>
+          ) : (
+            <EmptyState />
+          )}
+        </ScrollView>
       </View>
-
-      {/* Pet List */}
-      <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
-        {loading ? (
-          <View className="justify-center items-center py-16">
-            <ActivityIndicator size="large" color="#FF7200FF" />
-            <Text className="mt-4 text-gray-600">Loading pets...</Text>
-          </View>
-        ) : filteredPets.length > 0 ? (
-          <>
-            {filteredPets.map((pet) => (
-              <PetCard key={pet.id} pet={pet} />
-            ))}
-            <View className="h-20" />
-          </>
-        ) : (
-          <EmptyState />
-        )}
-      </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
