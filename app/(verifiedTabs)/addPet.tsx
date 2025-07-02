@@ -554,7 +554,13 @@ export default function AddPet() {
 
       Alert.alert("Success!", "Your pet has been added successfully.", [
         {
-          text: "OK",
+          text: "Add Another Pet",
+          onPress: () => {
+            resetForm();
+          },
+        },
+        {
+          text: "Go Back",
           onPress: () => {
             try {
               if (videoPlayer && selectedVideo) {
@@ -563,6 +569,7 @@ export default function AddPet() {
             } catch (error) {
               console.log("Video player success error:", error);
             }
+            resetForm();
             router.back();
           },
         },
@@ -577,6 +584,34 @@ export default function AddPet() {
 
   const updateFormData = (field: keyof PetFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const resetForm = () => {
+    // Reset form data
+    setFormData({
+      name: "",
+      breed: "",
+      age: "",
+      gender: "",
+      location: "",
+      description: "",
+    });
+
+    // Clear selected media
+    setSelectedImage(null);
+    setSelectedVideo(null);
+
+    // Reset loading states
+    setLoading({ image: false, video: false });
+
+    // Pause video player if active
+    try {
+      if (videoPlayer && selectedVideo) {
+        videoPlayer.pause();
+      }
+    } catch (error) {
+      console.log("Video player reset error:", error);
+    }
   };
 
   const handleBack = () => {
