@@ -1,5 +1,6 @@
 "use client";
 
+import { useFocusEffect } from "@react-navigation/native";
 import { VideoView, useVideoPlayer } from "expo-video";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -14,7 +15,7 @@ import {
 import { supabase } from "../../utils/supabase";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
-const TAB_BAR_HEIGHT = 50; // mb-36 equivalent (36 * 4 = 144px)
+const TAB_BAR_HEIGHT = 50;
 const VIDEO_HEIGHT = screenHeight - TAB_BAR_HEIGHT;
 
 interface VideoItem {
@@ -32,9 +33,11 @@ interface VideoItem {
 const VideoItemComponent = ({
   item,
   isVisible,
+  isScreenFocused,
 }: {
   item: VideoItem;
   isVisible: boolean;
+  isScreenFocused: boolean;
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -48,16 +51,18 @@ const VideoItemComponent = ({
   const needsTruncation = item.description.length > maxLength;
 
   useEffect(() => {
-    if (isVisible) {
+    if (isVisible && isScreenFocused) {
       videoPlayer.play();
       setIsPlaying(true);
     } else {
       videoPlayer.pause();
       setIsPlaying(false);
     }
-  }, [isVisible, videoPlayer]);
+  }, [isVisible, isScreenFocused, videoPlayer]);
 
   const handleVideoPress = () => {
+    if (!isScreenFocused) return; // Don't allow interaction when screen is not focused
+
     if (isPlaying) {
       videoPlayer.pause();
       setIsPlaying(false);
@@ -177,7 +182,21 @@ export default function Home() {
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isScreenFocused, setIsScreenFocused] = useState(true);
   const flatListRef = useRef<FlatList>(null);
+
+  // Handle screen focus/blur to pause videos when navigating away
+  useFocusEffect(
+    useCallback(() => {
+      // Screen is focused
+      setIsScreenFocused(true);
+
+      return () => {
+        // Screen is losing focus - pause all videos
+        setIsScreenFocused(false);
+      };
+    }, [])
+  );
 
   useEffect(() => {
     getVideos();
@@ -186,7 +205,6 @@ export default function Home() {
   const getVideos = async () => {
     try {
       setLoading(true);
-
       const { data, error } = await supabase
         .from("Video")
         .select("*,User(username)")
@@ -292,9 +310,14 @@ export default function Home() {
     index: number;
   }) => {
     const isVisible = index === currentIndex;
+
     return (
       <View style={{ width: screenWidth, height: screenHeight }}>
-        <VideoItemComponent item={item} isVisible={isVisible} />
+        <VideoItemComponent
+          item={item}
+          isVisible={isVisible}
+          isScreenFocused={isScreenFocused}
+        />
       </View>
     );
   };
