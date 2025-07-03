@@ -1,9 +1,12 @@
+"use client";
+
 import { VideoView, useVideoPlayer } from "expo-video";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
   FlatList,
+  Pressable,
   SafeAreaView,
   Text,
   View,
@@ -23,7 +26,7 @@ interface VideoItem {
   createdAt: string;
 }
 
-// Separate component for video items to properly use hooks
+// TikTok-style Video Component
 const VideoItemComponent = ({
   item,
   isVisible,
@@ -31,6 +34,8 @@ const VideoItemComponent = ({
   item: VideoItem;
   isVisible: boolean;
 }) => {
+  const [isPlaying, setIsPlaying] = useState(false);
+
   const videoPlayer = useVideoPlayer(item.signedUrl || "", (player) => {
     player.loop = true;
   });
@@ -38,15 +43,27 @@ const VideoItemComponent = ({
   useEffect(() => {
     if (isVisible) {
       videoPlayer.play();
+      setIsPlaying(true);
     } else {
       videoPlayer.pause();
+      setIsPlaying(false);
     }
   }, [isVisible, videoPlayer]);
+
+  const handleVideoPress = () => {
+    if (isPlaying) {
+      videoPlayer.pause();
+      setIsPlaying(false);
+    } else {
+      videoPlayer.play();
+      setIsPlaying(true);
+    }
+  };
 
   if (!item.signedUrl) {
     return (
       <View className="flex-1 justify-center items-center bg-black">
-        <ActivityIndicator size="large" color="#8B5CF6" />
+        <ActivityIndicator size="large" color="#FF7200FF" />
         <Text className="mt-4 text-white">Loading video...</Text>
       </View>
     );
@@ -54,17 +71,59 @@ const VideoItemComponent = ({
 
   return (
     <View className="flex-1 bg-black">
+      {/* Video Player */}
       <VideoView
         style={{ width: "100%", height: "100%" }}
         player={videoPlayer}
         allowsFullscreen={false}
         allowsPictureInPicture={false}
+        showsTimecodes={false}
+        requiresLinearPlayback={false}
+        contentFit="cover"
       />
 
-      {/* Only description overlay */}
-      <View className="absolute right-0 bottom-0 left-0 p-6">
-        <Text className="text-base font-medium leading-6 text-white">
+      {/* Invisible Touch Area for Play/Pause */}
+      <Pressable
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 1,
+        }}
+        onPress={handleVideoPress}
+      >
+        {/* Play Button Overlay - Only show when paused */}
+        {!isPlaying && (
+          <View className="flex-1 justify-center items-center">
+            <View
+              className="justify-center items-center w-20 h-20 rounded-full"
+              style={{
+                backgroundColor: "rgba(255, 255, 255, 0.9)",
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.3,
+                shadowRadius: 4,
+                elevation: 5,
+              }}
+            >
+              <Text className="ml-1 text-4xl">▶️</Text>
+            </View>
+          </View>
+        )}
+      </Pressable>
+
+      {/* Description Overlay */}
+      <View
+        className="absolute right-0 bottom-0 left-0 p-6"
+        style={{ zIndex: 2 }}
+      >
+        <Text className="text-base font-medium leading-6 text-white drop-shadow-lg">
           {item.description}
+        </Text>
+        <Text className="mt-1 text-sm text-gray-300">
+          @{item.User.username}
         </Text>
       </View>
     </View>
@@ -84,6 +143,7 @@ export default function Home() {
   const getVideos = async () => {
     try {
       setLoading(true);
+
       const { data, error } = await supabase
         .from("Video")
         .select("*,User(username)")
@@ -189,7 +249,6 @@ export default function Home() {
     index: number;
   }) => {
     const isVisible = index === currentIndex;
-
     return (
       <View style={{ width: screenWidth, height: screenHeight }}>
         <VideoItemComponent item={item} isVisible={isVisible} />
@@ -200,7 +259,7 @@ export default function Home() {
   if (loading) {
     return (
       <SafeAreaView className="flex-1 justify-center items-center bg-black">
-        <ActivityIndicator size="large" color="#8B5CF6" />
+        <ActivityIndicator size="large" color="#FF7200FF" />
         <Text className="mt-4 text-lg text-white">Loading videos...</Text>
       </SafeAreaView>
     );
