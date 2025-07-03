@@ -1,5 +1,6 @@
 "use client";
 
+import AntDesign from "@expo/vector-icons/AntDesign";
 import { useFocusEffect } from "@react-navigation/native";
 import { VideoView, useVideoPlayer } from "expo-video";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -47,7 +48,7 @@ const VideoItemComponent = ({
   });
 
   // Check if description needs truncation
-  const maxLength = 100;
+  const maxLength = 50;
   const needsTruncation = item.description.length > maxLength;
 
   useEffect(() => {
@@ -134,7 +135,7 @@ const VideoItemComponent = ({
                   elevation: 5,
                 }}
               >
-                <Text className="ml-1 text-4xl">▶️</Text>
+                <AntDesign name="caretright" size={24} color="black" />
               </View>
             </View>
           )}
@@ -142,13 +143,13 @@ const VideoItemComponent = ({
 
         {/* Description Overlay - Positioned above tab bar */}
         <View
-          className="absolute right-0 left-0 p-6"
+          className="absolute left-0 right-20 p-6"
           style={{
             bottom: 20, // Position above the tab bar area
             zIndex: 2,
           }}
         >
-          <Text className="mb-2 text-sm text-gray-300">
+          <Text className="mb-2 text-2xl font-bold text-gray-300">
             @{item.User.username}
           </Text>
 
@@ -161,7 +162,7 @@ const VideoItemComponent = ({
             {needsTruncation && (
               <Pressable onPress={toggleDescription} className="mt-2">
                 <Text
-                  className="text-sm font-semibold drop-shadow-lg"
+                  className="text-lg font-semibold drop-shadow-lg"
                   style={{ color: "#FF7200FF" }}
                 >
                   {isExpanded ? "See less" : "See more"}
