@@ -1,5 +1,7 @@
 "use client"
 
+import { useAuth } from "../provider/AuthProvider";
+import { createClient } from "@supabase/supabase-js";
 import { useRouter } from "expo-router";
 import { useState, useEffect } from "react"
 import { View, Text, TextInput, TouchableOpacity, ScrollView, SafeAreaView, StatusBar, Modal, Pressable, Alert } from "react-native"
@@ -7,7 +9,12 @@ import { ChevronLeft, Calendar } from "lucide-react-native"
 import DateTimePicker from "@react-native-community/datetimepicker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ?? "";
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "";
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
 export default function AdoptionApplication() {
+  const { user } = useAuth();
   const router = useRouter();
   const [formData, setFormData] = useState({
     firstName: "",
@@ -54,22 +61,66 @@ export default function AdoptionApplication() {
   }
 
   const handleSubmit = async () => {
-    try {
-      // Replace with backend endpoint
-      // const response = await fetch("https://your-backend-url.com/api/adoption-application", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify(formData),
-      // });
-      // if (!response.ok) throw new Error("Failed to submit");
-
-      await AsyncStorage.setItem("adoptionProfileForm", JSON.stringify(formData));
-      Alert.alert("Success", "Your application has been saved!");
-      // router.push("/(userTabs)/profile");
-    } catch (error) {
-      Alert.alert("Error", "Could not save application. Please try again later.");
+  try {
+    if (!user?.id) {
+      Alert.alert("Error", "You must be signed in to submit an application.");
+      return;
     }
-  };
+
+    const { data: existing, error: fetchError } = await supabase
+      .from("Adoption Profile")
+      .select("id")
+      .eq("user_id", user.id)
+      .single();
+
+    const profileData = {
+      user_id: user.id,
+      first_name: formData.firstName,
+      last_name: formData.lastName,
+      address: formData.address,
+      phone: formData.phone,
+      email: formData.email,
+      birth_date: formData.birthDate ? new Date(formData.birthDate) : null,
+      occupation: formData.occupation,
+      company_name: formData.companyName,
+      social: formData.instagramHandle,
+      social_link: formData.igNetworkLink,
+      status: formData.status,
+      pronouns: formData.pronouns,
+      alt_first_name: formData.altFirstName,
+      alt_last_name: formData.altLastName,
+      alt_relationship: formData.relationship,
+      alt_phone: formData.altPhone,
+      alt_email: formData.altEmail,
+      preference: formData.adoptionType,
+      has_adopted: formData.adoptedBefore === "Yes",
+      adopt_specific_pet: formData.specificAnimal === "Yes",
+      pet_description: formData.petDescription,
+    };
+
+    let error;
+    if (existing) {
+      // 2. Update existing profile
+      ({ error } = await supabase
+        .from("Adoption Profile")
+        .update(profileData)
+        .eq("user_id", user.id));
+    } else {
+      // 3. Insert new profile
+      ({ error } = await supabase
+        .from("Adoption Profile")
+        .insert([profileData]));
+    }
+
+    if (error) throw error;
+
+    await AsyncStorage.setItem("adoptionFormData", JSON.stringify(formData));
+    Alert.alert("Success", "Your application has been saved!");
+    router.push("/(userTabs)/profile");
+  } catch (error) {
+    Alert.alert("Error", "Could not save application. Please try again later.");
+  }
+};
 
   const statusOptions = ["Single", "Married", "Divorced", "Widowed"];
   const pronounsOptions = ["He/Him", "She/Her", "They/Them", "Other"];
