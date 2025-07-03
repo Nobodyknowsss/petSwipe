@@ -14,6 +14,8 @@ import {
 import { supabase } from "../../utils/supabase";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+const TAB_BAR_HEIGHT = 50; // mb-36 equivalent (36 * 4 = 144px)
+const VIDEO_HEIGHT = screenHeight - TAB_BAR_HEIGHT;
 
 interface VideoItem {
   id: string;
@@ -35,10 +37,15 @@ const VideoItemComponent = ({
   isVisible: boolean;
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const videoPlayer = useVideoPlayer(item.signedUrl || "", (player) => {
     player.loop = true;
   });
+
+  // Check if description needs truncation
+  const maxLength = 100;
+  const needsTruncation = item.description.length > maxLength;
 
   useEffect(() => {
     if (isVisible) {
@@ -60,9 +67,22 @@ const VideoItemComponent = ({
     }
   };
 
+  const toggleDescription = () => {
+    setIsExpanded(!isExpanded);
+  };
+
+  const getDisplayText = () => {
+    if (!needsTruncation) return item.description;
+    if (isExpanded) return item.description;
+    return item.description.substring(0, maxLength) + "...";
+  };
+
   if (!item.signedUrl) {
     return (
-      <View className="flex-1 justify-center items-center bg-black">
+      <View
+        className="flex-1 justify-center items-center bg-black"
+        style={{ height: VIDEO_HEIGHT }}
+      >
         <ActivityIndicator size="large" color="#FF7200FF" />
         <Text className="mt-4 text-white">Loading video...</Text>
       </View>
@@ -70,62 +90,85 @@ const VideoItemComponent = ({
   }
 
   return (
-    <View className="flex-1 bg-black">
-      {/* Video Player */}
-      <VideoView
-        style={{ width: "100%", height: "100%" }}
-        player={videoPlayer}
-        allowsFullscreen={false}
-        allowsPictureInPicture={false}
-        showsTimecodes={false}
-        requiresLinearPlayback={false}
-        contentFit="cover"
-      />
+    <View className="bg-black" style={{ height: VIDEO_HEIGHT }}>
+      {/* Video Player Container */}
+      <View className="flex-1 bg-black">
+        <VideoView
+          style={{ width: "100%", height: "100%" }}
+          player={videoPlayer}
+          allowsFullscreen={false}
+          allowsPictureInPicture={false}
+          showsTimecodes={false}
+          requiresLinearPlayback={false}
+          contentFit="cover"
+        />
 
-      {/* Invisible Touch Area for Play/Pause */}
-      <Pressable
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: 1,
-        }}
-        onPress={handleVideoPress}
-      >
-        {/* Play Button Overlay - Only show when paused */}
-        {!isPlaying && (
-          <View className="flex-1 justify-center items-center">
-            <View
-              className="justify-center items-center w-20 h-20 rounded-full"
-              style={{
-                backgroundColor: "rgba(255, 255, 255, 0.9)",
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.3,
-                shadowRadius: 4,
-                elevation: 5,
-              }}
-            >
-              <Text className="ml-1 text-4xl">▶️</Text>
+        {/* Invisible Touch Area for Play/Pause */}
+        <Pressable
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 1,
+          }}
+          onPress={handleVideoPress}
+        >
+          {/* Play Button Overlay - Only show when paused */}
+          {!isPlaying && (
+            <View className="flex-1 justify-center items-center">
+              <View
+                className="justify-center items-center w-20 h-20 rounded-full"
+                style={{
+                  backgroundColor: "rgba(255, 255, 255, 0.9)",
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 4,
+                  elevation: 5,
+                }}
+              >
+                <Text className="ml-1 text-4xl">▶️</Text>
+              </View>
             </View>
-          </View>
-        )}
-      </Pressable>
+          )}
+        </Pressable>
 
-      {/* Description Overlay */}
-      <View
-        className="absolute right-0 bottom-0 left-0 p-6"
-        style={{ zIndex: 2 }}
-      >
-        <Text className="text-base font-medium leading-6 text-white drop-shadow-lg">
-          {item.description}
-        </Text>
-        <Text className="mt-1 text-sm text-gray-300">
-          @{item.User.username}
-        </Text>
+        {/* Description Overlay - Positioned above tab bar */}
+        <View
+          className="absolute right-0 left-0 p-6"
+          style={{
+            bottom: 20, // Position above the tab bar area
+            zIndex: 2,
+          }}
+        >
+          <Text className="mb-2 text-sm text-gray-300">
+            @{item.User.username}
+          </Text>
+
+          {/* Description with See More/Less */}
+          <View>
+            <Text className="text-base font-medium leading-6 text-white drop-shadow-lg">
+              {getDisplayText()}
+            </Text>
+
+            {needsTruncation && (
+              <Pressable onPress={toggleDescription} className="mt-2">
+                <Text
+                  className="text-sm font-semibold drop-shadow-lg"
+                  style={{ color: "#FF7200FF" }}
+                >
+                  {isExpanded ? "See less" : "See more"}
+                </Text>
+              </Pressable>
+            )}
+          </View>
+        </View>
       </View>
+
+      {/* Black background for tab bar area */}
+      <View className="bg-black" style={{ height: TAB_BAR_HEIGHT }} />
     </View>
   );
 };
