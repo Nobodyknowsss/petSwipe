@@ -115,6 +115,8 @@ const VideoItemComponent = ({
   };
 
   const handleAdaptPress = () => {
+    console.log("ADAPT BUTTON CLICKED!");
+
     if (!item.user_id) {
       alert("No pet information available");
       return;

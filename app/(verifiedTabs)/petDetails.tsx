@@ -98,7 +98,6 @@ export default function PetDetails() {
       }
 
       setPets(data || []);
-
       // If only one pet, go directly to details
       if (data && data.length === 1) {
         setSelectedPet(data[0]);
@@ -207,43 +206,54 @@ export default function PetDetails() {
   const PetCard = ({ pet }: { pet: Pet }) => (
     <TouchableOpacity
       onPress={() => handleSelectPet(pet)}
-      className="p-4 mb-4 bg-white rounded-2xl"
+      className="overflow-hidden mb-4 bg-white rounded-2xl"
       style={{
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 4,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+        elevation: 6,
       }}
     >
-      <View className="flex-row">
-        <View className="mr-4">
-          <Image
-            source={{
-              uri:
-                pet.photoUrl ||
-                "https://via.placeholder.com/120x120/F3F4F6/9CA3AF?text=No+Image",
-            }}
-            style={{ width: 120, height: 120 }}
-            className="bg-gray-100 rounded-xl"
-          />
-        </View>
-        <View className="flex-1 justify-center">
-          <Text className="mb-1 text-lg font-bold text-gray-800">
-            {pet.name}
-          </Text>
-          <Text className="mb-1 text-sm text-gray-600">{pet.breed}</Text>
-          <Text className="text-sm text-gray-500">
-            {pet.age} years old • {pet.gender}
-          </Text>
-          <Text className="text-sm text-gray-500">{pet.location}</Text>
-        </View>
-        <View className="justify-center items-center">
-          <View
-            className="justify-center items-center w-12 h-12 rounded-full"
-            style={{ backgroundColor: "rgba(255, 114, 0, 0.1)" }}
-          >
-            <Text className="text-lg">→</Text>
+      <View className="p-5">
+        <View className="flex-row">
+          {/* Pet Image */}
+          <View className="mr-4">
+            <Image
+              source={{
+                uri:
+                  pet.photoUrl ||
+                  "https://via.placeholder.com/100x100/F3F4F6/9CA3AF?text=No+Image",
+              }}
+              style={{ width: 100, height: 100 }}
+              className="bg-gray-100 rounded-xl"
+            />
+          </View>
+
+          {/* Pet Info */}
+          <View className="flex-1 justify-center">
+            <Text className="mb-2 text-xl font-bold text-gray-800">
+              {pet.name}
+            </Text>
+            <Text className="mb-1 text-base text-gray-600">{pet.breed}</Text>
+            <Text className="mb-1 text-sm text-gray-500">
+              {pet.age} years old • {pet.gender}
+            </Text>
+            <View className="flex-row items-center">
+              <Text className="text-sm text-gray-500">📍 {pet.location}</Text>
+            </View>
+          </View>
+
+          {/* Arrow Icon */}
+          <View className="justify-center items-center">
+            <View
+              className="justify-center items-center w-12 h-12 rounded-full"
+              style={{ backgroundColor: "rgba(255, 114, 0, 0.1)" }}
+            >
+              <Text className="text-lg" style={{ color: "#FF7200FF" }}>
+                →
+              </Text>
+            </View>
           </View>
         </View>
       </View>
@@ -252,8 +262,8 @@ export default function PetDetails() {
 
   const PetDetailsView = ({ pet }: { pet: Pet }) => (
     <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-      {/* Pet Image */}
-      <View className="mb-6">
+      {/* Hero Image */}
+      <View className="mb-8">
         <Image
           source={{
             uri:
@@ -262,66 +272,104 @@ export default function PetDetails() {
           }}
           style={{
             width: screenWidth - 32,
-            height: 300,
-            borderRadius: 16,
+            height: 280,
+            borderRadius: 20,
           }}
           className="bg-gray-100"
         />
       </View>
 
-      {/* Pet Information */}
-      <View className="px-4 space-y-6">
-        {/* Name and Basic Info */}
-        <View>
-          <Text className="mb-2 text-3xl font-bold text-gray-800">
-            {pet.name}
-          </Text>
+      {/* Pet Information Card */}
+      <View
+        className="p-6 mx-4 mb-6 bg-white rounded-2xl"
+        style={{
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.08,
+          shadowRadius: 12,
+          elevation: 6,
+        }}
+      >
+        {/* Name */}
+        <Text className="mb-6 text-3xl font-bold text-gray-800">
+          {pet.name}
+        </Text>
+
+        {/* Basic Info Grid */}
+        <View className="space-y-4">
           <View className="flex-row space-x-4">
             <View className="flex-1">
-              <Text className="text-sm text-gray-500">Breed</Text>
-              <Text className="text-lg font-semibold text-gray-700">
+              <Text className="mb-1 text-sm font-semibold text-gray-500">
+                BREED
+              </Text>
+              <Text className="text-lg font-semibold text-gray-800">
                 {pet.breed}
               </Text>
             </View>
             <View className="flex-1">
-              <Text className="text-sm text-gray-500">Age</Text>
-              <Text className="text-lg font-semibold text-gray-700">
+              <Text className="mb-1 text-sm font-semibold text-gray-500">
+                AGE
+              </Text>
+              <Text className="text-lg font-semibold text-gray-800">
                 {pet.age} years old
               </Text>
             </View>
           </View>
+
+          <View className="flex-row space-x-4">
+            <View className="flex-1">
+              <Text className="mb-1 text-sm font-semibold text-gray-500">
+                GENDER
+              </Text>
+              <Text className="text-lg font-semibold text-gray-800">
+                {pet.gender}
+              </Text>
+            </View>
+            <View className="flex-1">
+              <Text className="mb-1 text-sm font-semibold text-gray-500">
+                LOCATION
+              </Text>
+              <Text className="text-lg font-semibold text-gray-800">
+                {pet.location}
+              </Text>
+            </View>
+          </View>
         </View>
+      </View>
 
-        {/* Gender and Location */}
-        <View className="flex-row space-x-4">
-          <View className="flex-1">
-            <Text className="text-sm text-gray-500">Gender</Text>
-            <Text className="text-lg font-semibold text-gray-700">
-              {pet.gender}
-            </Text>
-          </View>
-          <View className="flex-1">
-            <Text className="text-sm text-gray-500">Location</Text>
-            <Text className="text-lg font-semibold text-gray-700">
-              {pet.location}
-            </Text>
-          </View>
+      {/* Description Card */}
+      {pet.description && (
+        <View
+          className="p-6 mx-4 mb-6 bg-white rounded-2xl"
+          style={{
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.08,
+            shadowRadius: 12,
+            elevation: 6,
+          }}
+        >
+          <Text className="mb-3 text-sm font-semibold text-gray-500">
+            ABOUT {pet.name.toUpperCase()}
+          </Text>
+          <Text className="text-base leading-7 text-gray-700">
+            {pet.description}
+          </Text>
         </View>
+      )}
 
-        {/* Description */}
-        {pet.description && (
-          <View>
-            <Text className="mb-2 text-sm text-gray-500">About {pet.name}</Text>
-            <Text className="text-base leading-6 text-gray-700">
-              {pet.description}
-            </Text>
-          </View>
-        )}
-
-        {/* Contact Button */}
+      {/* Contact Button */}
+      <View className="mx-4 mb-8">
         <TouchableOpacity
-          className="py-4 mt-6 rounded-2xl"
-          style={{ backgroundColor: "#FF7200FF" }}
+          className="py-5 rounded-2xl"
+          style={{
+            backgroundColor: "#FF7200FF",
+            shadowColor: "#FF7200FF",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 12,
+            elevation: 8,
+          }}
           onPress={() => {
             Alert.alert(
               "Contact Owner",
@@ -340,17 +388,25 @@ export default function PetDetails() {
             Interested in {pet.name}?
           </Text>
         </TouchableOpacity>
-
-        <View className="h-20" />
       </View>
+
+      <View className="h-20" />
     </ScrollView>
   );
 
   if (loading) {
     return (
       <SafeAreaView className="flex-1 justify-center items-center bg-gradient-to-b from-orange-50 to-white">
-        <ActivityIndicator size="large" color="#FF7200FF" />
-        <Text className="mt-4 text-gray-600">Loading pet details...</Text>
+        <View
+          className="justify-center items-center mb-4 w-20 h-20 rounded-full"
+          style={{ backgroundColor: "rgba(255, 114, 0, 0.1)" }}
+        >
+          <ActivityIndicator size="large" color="#FF7200FF" />
+        </View>
+        <Text className="text-lg font-semibold text-gray-800">
+          Loading pet details...
+        </Text>
+        <Text className="mt-1 text-sm text-gray-500">Please wait a moment</Text>
       </SafeAreaView>
     );
   }
@@ -358,19 +414,35 @@ export default function PetDetails() {
   return (
     <SafeAreaView className="flex-1 bg-gradient-to-b from-orange-50 to-white">
       <View className="flex-1 mb-28">
-        {/* Header */}
-        <View className="px-6 pt-8 pb-4">
-          <View className="flex-row items-center mb-4">
-            <TouchableOpacity onPress={handleBack} className="mr-4">
-              <Text className="text-2xl font-bold text-gray-800">←</Text>
+        {/* Professional Header */}
+        <View className="px-6 pt-8 pb-6">
+          <View className="flex-row items-center mb-2">
+            <TouchableOpacity
+              onPress={handleBack}
+              className="justify-center items-center mr-4 w-10 h-10 rounded-full"
+              style={{ backgroundColor: "rgba(255, 114, 0, 0.1)" }}
+            >
+              <Text
+                className="text-xl font-bold"
+                style={{ color: "#FF7200FF" }}
+              >
+                ←
+              </Text>
             </TouchableOpacity>
-            <Text className="text-2xl font-bold text-gray-800">
-              {step === "details"
-                ? selectedPet?.name
-                : !userId && !petId
-                  ? "Pets Available for Adoption"
-                  : "Available Pets"}
-            </Text>
+            <View className="flex-1">
+              <Text className="text-2xl font-bold text-gray-800">
+                {step === "details"
+                  ? selectedPet?.name
+                  : !userId && !petId
+                    ? "Available Pets"
+                    : "Pet Selection"}
+              </Text>
+              {step === "list" && (
+                <Text className="mt-1 text-sm text-gray-500">
+                  {pets.length} pet{pets.length !== 1 ? "s" : ""} available
+                </Text>
+              )}
+            </View>
           </View>
         </View>
 
@@ -379,17 +451,18 @@ export default function PetDetails() {
           {step === "list" ? (
             // Pet Selection List
             <>
-              <View className="mb-4">
-                <Text className="mb-2 text-lg font-bold text-gray-800">
-                  {!userId && !petId
-                    ? "Find your perfect companion"
-                    : "Choose a pet to learn more"}
-                </Text>
-                <Text className="text-gray-600">
-                  {pets.length} pet{pets.length !== 1 ? "s" : ""} available for
-                  adoption
-                </Text>
-              </View>
+              {pets.length > 0 && (
+                <View className="mb-6">
+                  <Text className="mb-2 text-lg font-bold text-gray-800">
+                    {!userId && !petId
+                      ? "Find your perfect companion"
+                      : "Choose a pet to learn more"}
+                  </Text>
+                  <Text className="text-gray-600">
+                    Tap on any pet to view detailed information
+                  </Text>
+                </View>
+              )}
 
               <ScrollView showsVerticalScrollIndicator={false}>
                 {pets.map((pet) => (
@@ -402,11 +475,21 @@ export default function PetDetails() {
             selectedPet && <PetDetailsView pet={selectedPet} />
           )}
 
+          {/* Empty State */}
           {pets.length === 0 && step === "list" && (
             <View className="flex-1 justify-center items-center">
-              <Text className="text-xl text-gray-500">No pets available</Text>
-              <Text className="mt-2 text-gray-400">
-                This user hasn&apos;t added any pets yet.
+              <View
+                className="justify-center items-center mb-4 w-20 h-20 rounded-full"
+                style={{ backgroundColor: "rgba(255, 114, 0, 0.1)" }}
+              >
+                <Text className="text-3xl">🐾</Text>
+              </View>
+              <Text className="mb-2 text-xl font-bold text-gray-800">
+                No pets available
+              </Text>
+              <Text className="px-8 text-center text-gray-500">
+                This user hasnt added any pets yet. Check back later for new
+                additions!
               </Text>
             </View>
           )}
