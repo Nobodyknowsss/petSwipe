@@ -1,7 +1,10 @@
 "use client";
 
 import AntDesign from "@expo/vector-icons/AntDesign";
+import Entypo from "@expo/vector-icons/Entypo";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useFocusEffect } from "@react-navigation/native";
+import { router } from "expo-router";
 import { VideoView, useVideoPlayer } from "expo-video";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -24,6 +27,8 @@ interface VideoItem {
   uri: string;
   signedUrl?: string;
   description: string;
+  user_id: string;
+  pet_id?: string;
   User: {
     username: string;
   };
@@ -42,6 +47,8 @@ const VideoItemComponent = ({
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
 
   const videoPlayer = useVideoPlayer(item.signedUrl || "", (player) => {
     player.loop = true;
@@ -62,7 +69,7 @@ const VideoItemComponent = ({
   }, [isVisible, isScreenFocused, videoPlayer]);
 
   const handleVideoPress = () => {
-    if (!isScreenFocused) return; // Don't allow interaction when screen is not focused
+    if (!isScreenFocused) return;
 
     if (isPlaying) {
       videoPlayer.pause();
@@ -81,6 +88,49 @@ const VideoItemComponent = ({
     if (!needsTruncation) return item.description;
     if (isExpanded) return item.description;
     return item.description.substring(0, maxLength) + "...";
+  };
+
+  // Button handlers
+  const handleProfilePress = () => {
+    console.log("Profile pressed for user:", item.User.username);
+  };
+
+  const handleFollowPress = () => {
+    setIsFollowing(!isFollowing);
+    console.log(
+      "Follow pressed for user:",
+      item.User.username,
+      "Following:",
+      !isFollowing
+    );
+  };
+
+  const handleLikePress = () => {
+    setIsLiked(!isLiked);
+    console.log("Like pressed for video:", item.id, "Liked:", !isLiked);
+  };
+
+  const handleCommentPress = () => {
+    console.log("Comment pressed for video:", item.id);
+  };
+
+  const handleAdaptPress = () => {
+    console.log("ADAPT BUTTON CLICKED!");
+
+    if (!item.user_id) {
+      alert("No pet information available");
+      return;
+    }
+
+    // Navigate to show the specific pet from this video creator
+    // Pass video creation time to help match the correct pet
+    router.push(
+      `./petDetails?userId=${item.user_id}&showFirst=true&fromVideo=true&videoDate=${item.createdAt}`
+    );
+  };
+
+  const handleSharePress = () => {
+    console.log("Share pressed for video:", item.id);
   };
 
   if (!item.signedUrl) {
@@ -107,45 +157,173 @@ const VideoItemComponent = ({
           showsTimecodes={false}
           requiresLinearPlayback={false}
           contentFit="cover"
+          nativeControls={false}
         />
 
-        {/* Invisible Touch Area for Play/Pause */}
+        {/* Play/Pause touch area - covers entire video except right side buttons */}
         <Pressable
           style={{
             position: "absolute",
             top: 0,
             left: 0,
-            right: 0,
+            right: 40, // Leave space for side buttons
             bottom: 0,
             zIndex: 1,
           }}
           onPress={handleVideoPress}
-        >
-          {/* Play Button Overlay - Only show when paused */}
-          {!isPlaying && (
-            <View className="flex-1 justify-center items-center">
-              <View
-                className="justify-center items-center w-20 h-20 rounded-full"
-                style={{
-                  backgroundColor: "rgba(255, 255, 255, 0.9)",
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 4,
-                  elevation: 5,
-                }}
-              >
-                <AntDesign name="caretright" size={24} color="black" />
-              </View>
-            </View>
-          )}
-        </Pressable>
+        />
 
-        {/* Description Overlay - Positioned above tab bar */}
+        {/* Play Button Overlay - Centered on entire screen */}
+        {!isPlaying && (
+          <View
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              justifyContent: "center",
+              alignItems: "center",
+              zIndex: 2,
+              pointerEvents: "none", // Allow touches to pass through to the Pressable below
+            }}
+          >
+            <View
+              className="justify-center items-center w-20 h-20 rounded-full"
+              style={{
+                backgroundColor: "rgba(255, 255, 255, 0.9)",
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.3,
+                shadowRadius: 4,
+                elevation: 5,
+              }}
+            >
+              <AntDesign name="caretright" size={24} color="black" />
+            </View>
+          </View>
+        )}
+
+        {/* Right Side Button Overlay */}
+        <View
+          className="absolute right-4 justify-center items-center"
+          style={{
+            top: screenHeight / 2 - 30,
+            zIndex: 3,
+          }}
+        >
+          {/* User Profile Button */}
+          <Pressable
+            onPress={handleProfilePress}
+            className="relative mb-4"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.3,
+              shadowRadius: 4,
+              elevation: 5,
+            }}
+          >
+            <View className="justify-center items-center w-12 h-12 bg-gray-300 rounded-full border-2 border-white">
+              <FontAwesome name="user" size={20} color="gray" />
+            </View>
+
+            {/* Follow Button */}
+            <Pressable
+              onPress={handleFollowPress}
+              className="absolute -bottom-2 left-1/2 justify-center items-center w-6 h-6 rounded-full border-2 border-white transform -translate-x-1/2"
+              style={{
+                backgroundColor: isFollowing ? "#gray" : "#FF7200FF",
+                marginLeft: -12,
+              }}
+            >
+              <AntDesign
+                name={isFollowing ? "check" : "plus"}
+                size={12}
+                color="white"
+              />
+            </Pressable>
+          </Pressable>
+
+          {/* Like Button - Always filled heart */}
+          <Pressable
+            onPress={handleLikePress}
+            className="justify-center items-center mb-6"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.3,
+              shadowRadius: 4,
+              elevation: 5,
+            }}
+          >
+            <AntDesign
+              name="heart"
+              size={30}
+              color={isLiked ? "#FF0000" : "white"}
+            />
+            <Text className="mt-1 text-xs text-white">125</Text>
+          </Pressable>
+
+          {/* Comment Button - Filled */}
+          <Pressable
+            onPress={handleCommentPress}
+            className="justify-center items-center mb-6"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.3,
+              shadowRadius: 4,
+              elevation: 5,
+            }}
+          >
+            <FontAwesome name="comment" size={28} color="white" />
+            <Text className="mt-1 text-xs text-white">42</Text>
+          </Pressable>
+
+          {/* Adapt Button - Custom Circle with A */}
+          <Pressable
+            onPress={handleAdaptPress}
+            className="justify-center items-center mb-6"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.3,
+              shadowRadius: 4,
+              elevation: 5,
+            }}
+          >
+            <View
+              className="justify-center items-center w-8 h-8 rounded-full border-2 border-white"
+              style={{ backgroundColor: "white" }}
+            >
+              <Text className="text-lg font-bold text-black">A</Text>
+            </View>
+            <Text className="mt-1 text-xs text-white">Adapt</Text>
+          </Pressable>
+
+          {/* Share Button */}
+          <Pressable
+            onPress={handleSharePress}
+            className="justify-center items-center mb-6"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.3,
+              shadowRadius: 4,
+              elevation: 5,
+            }}
+          >
+            <Entypo name="share" size={26} color="white" />
+            <Text className="mt-1 text-xs text-white">Share</Text>
+          </Pressable>
+        </View>
+
+        {/* Description Overlay */}
         <View
           className="absolute left-0 right-20 p-6"
           style={{
-            bottom: 20, // Position above the tab bar area
+            bottom: 20,
             zIndex: 2,
           }}
         >
@@ -153,7 +331,6 @@ const VideoItemComponent = ({
             @{item.User.username}
           </Text>
 
-          {/* Description with See More/Less */}
           <View>
             <Text className="text-base font-medium leading-6 text-white drop-shadow-lg">
               {getDisplayText()}
@@ -208,7 +385,7 @@ export default function Home() {
       setLoading(true);
       const { data, error } = await supabase
         .from("Video")
-        .select("*,User(username)")
+        .select("id,uri,user_id,description,createdAt,User(username)")
         .order("createdAt", { ascending: false });
 
       if (error) {
