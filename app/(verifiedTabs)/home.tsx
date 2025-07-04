@@ -1,6 +1,9 @@
 "use client";
 
 import AntDesign from "@expo/vector-icons/AntDesign";
+import Entypo from "@expo/vector-icons/Entypo";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useFocusEffect } from "@react-navigation/native";
 import { VideoView, useVideoPlayer } from "expo-video";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -42,6 +45,8 @@ const VideoItemComponent = ({
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
 
   const videoPlayer = useVideoPlayer(item.signedUrl || "", (player) => {
     player.loop = true;
@@ -83,6 +88,38 @@ const VideoItemComponent = ({
     return item.description.substring(0, maxLength) + "...";
   };
 
+  // Button handlers
+  const handleProfilePress = () => {
+    console.log("Profile pressed for user:", item.User.username);
+  };
+
+  const handleFollowPress = () => {
+    setIsFollowing(!isFollowing);
+    console.log(
+      "Follow pressed for user:",
+      item.User.username,
+      "Following:",
+      !isFollowing
+    );
+  };
+
+  const handleLikePress = () => {
+    setIsLiked(!isLiked);
+    console.log("Like pressed for video:", item.id, "Liked:", !isLiked);
+  };
+
+  const handleCommentPress = () => {
+    console.log("Comment pressed for video:", item.id);
+  };
+
+  const handleRepostPress = () => {
+    console.log("Repost pressed for video:", item.id);
+  };
+
+  const handleSharePress = () => {
+    console.log("Share pressed for video:", item.id);
+  };
+
   if (!item.signedUrl) {
     return (
       <View
@@ -115,7 +152,7 @@ const VideoItemComponent = ({
             position: "absolute",
             top: 0,
             left: 0,
-            right: 0,
+            right: 80, // Leave space for right buttons
             bottom: 0,
             zIndex: 1,
           }}
@@ -140,6 +177,116 @@ const VideoItemComponent = ({
             </View>
           )}
         </Pressable>
+
+        {/* Right Side Button Overlay */}
+        <View
+          className="absolute right-4 justify-center items-center"
+          style={{
+            top: screenHeight / 2 - 30, // Center vertically with some offset
+            zIndex: 3,
+          }}
+        >
+          {/* User Profile Button */}
+          <Pressable
+            onPress={handleProfilePress}
+            className="relative mb-4"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.3,
+              shadowRadius: 4,
+              elevation: 5,
+            }}
+          >
+            <View className="justify-center items-center w-12 h-12 bg-gray-300 rounded-full border-2 border-white">
+              <FontAwesome name="user" size={20} color="gray" />
+            </View>
+
+            {/* Follow Button */}
+            <Pressable
+              onPress={handleFollowPress}
+              className="absolute -bottom-2 left-1/2 justify-center items-center w-6 h-6 rounded-full border-2 border-white transform -translate-x-1/2"
+              style={{
+                backgroundColor: isFollowing ? "#gray" : "#FF7200FF",
+                marginLeft: -12, // Center the button
+              }}
+            >
+              <AntDesign
+                name={isFollowing ? "check" : "plus"}
+                size={12}
+                color="white"
+              />
+            </Pressable>
+          </Pressable>
+
+          {/* Like Button */}
+          <Pressable
+            onPress={handleLikePress}
+            className="justify-center items-center mb-6"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.3,
+              shadowRadius: 4,
+              elevation: 5,
+            }}
+          >
+            <AntDesign
+              name={isLiked ? "heart" : "hearto"}
+              size={30}
+              color={isLiked ? "#FF0000" : "white"}
+            />
+            <Text className="mt-1 text-xs text-white">125</Text>
+          </Pressable>
+
+          {/* Comment Button */}
+          <Pressable
+            onPress={handleCommentPress}
+            className="justify-center items-center mb-6"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.3,
+              shadowRadius: 4,
+              elevation: 5,
+            }}
+          >
+            <FontAwesome name="comment-o" size={28} color="white" />
+            <Text className="mt-1 text-xs text-white">42</Text>
+          </Pressable>
+
+          {/* Repost Button */}
+          <Pressable
+            onPress={handleRepostPress}
+            className="justify-center items-center mb-6"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.3,
+              shadowRadius: 4,
+              elevation: 5,
+            }}
+          >
+            <MaterialIcons name="repeat" size={30} color="white" />
+            <Text className="mt-1 text-xs text-white">8</Text>
+          </Pressable>
+
+          {/* Share Button */}
+          <Pressable
+            onPress={handleSharePress}
+            className="justify-center items-center mb-6"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.3,
+              shadowRadius: 4,
+              elevation: 5,
+            }}
+          >
+            <Entypo name="share" size={26} color="white" />
+            <Text className="mt-1 text-xs text-white">Share</Text>
+          </Pressable>
+        </View>
 
         {/* Description Overlay - Positioned above tab bar */}
         <View
