@@ -120,6 +120,7 @@ export default function CreatePost() {
           {
             uri: selectedPet.videoUrl,
             user_id: user.id,
+            // pet_id: selectedPet.id, // TODO: Add this after database migration
             description:
               selectedPet.description ||
               `Check out my pet ${selectedPet.name}! ${selectedPet.breed}, ${selectedPet.age} years old from ${selectedPet.location}.`,
