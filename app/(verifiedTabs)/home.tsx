@@ -4,6 +4,7 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import Entypo from "@expo/vector-icons/Entypo";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useFocusEffect } from "@react-navigation/native";
+import { router } from "expo-router";
 import { VideoView, useVideoPlayer } from "expo-video";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -26,6 +27,8 @@ interface VideoItem {
   uri: string;
   signedUrl?: string;
   description: string;
+  user_id: string;
+  pet_id?: string;
   User: {
     username: string;
   };
@@ -112,7 +115,16 @@ const VideoItemComponent = ({
   };
 
   const handleAdaptPress = () => {
-    console.log("Adapt pressed for video:", item.id);
+    if (!item.user_id) {
+      alert("No pet information available");
+      return;
+    }
+
+    // Navigate to show the specific pet from this video creator
+    // Pass video creation time to help match the correct pet
+    router.push(
+      `./petDetails?userId=${item.user_id}&showFirst=true&fromVideo=true&videoDate=${item.createdAt}`
+    );
   };
 
   const handleSharePress = () => {
@@ -371,7 +383,7 @@ export default function Home() {
       setLoading(true);
       const { data, error } = await supabase
         .from("Video")
-        .select("*,User(username)")
+        .select("id,uri,user_id,description,createdAt,User(username)")
         .order("createdAt", { ascending: false });
 
       if (error) {
