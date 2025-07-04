@@ -3,7 +3,6 @@
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Entypo from "@expo/vector-icons/Entypo";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useFocusEffect } from "@react-navigation/native";
 import { VideoView, useVideoPlayer } from "expo-video";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -67,7 +66,7 @@ const VideoItemComponent = ({
   }, [isVisible, isScreenFocused, videoPlayer]);
 
   const handleVideoPress = () => {
-    if (!isScreenFocused) return; // Don't allow interaction when screen is not focused
+    if (!isScreenFocused) return;
 
     if (isPlaying) {
       videoPlayer.pause();
@@ -112,8 +111,8 @@ const VideoItemComponent = ({
     console.log("Comment pressed for video:", item.id);
   };
 
-  const handleRepostPress = () => {
-    console.log("Repost pressed for video:", item.id);
+  const handleAdaptPress = () => {
+    console.log("Adapt pressed for video:", item.id);
   };
 
   const handleSharePress = () => {
@@ -144,45 +143,58 @@ const VideoItemComponent = ({
           showsTimecodes={false}
           requiresLinearPlayback={false}
           contentFit="cover"
+          nativeControls={false}
         />
 
-        {/* Invisible Touch Area for Play/Pause */}
+        {/* Play/Pause touch area - covers entire video except right side buttons */}
         <Pressable
           style={{
             position: "absolute",
             top: 0,
             left: 0,
-            right: 80, // Leave space for right buttons
+            right: 40, // Leave space for side buttons
             bottom: 0,
             zIndex: 1,
           }}
           onPress={handleVideoPress}
-        >
-          {/* Play Button Overlay - Only show when paused */}
-          {!isPlaying && (
-            <View className="flex-1 justify-center items-center">
-              <View
-                className="justify-center items-center w-20 h-20 rounded-full"
-                style={{
-                  backgroundColor: "rgba(255, 255, 255, 0.9)",
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 4,
-                  elevation: 5,
-                }}
-              >
-                <AntDesign name="caretright" size={24} color="black" />
-              </View>
+        />
+
+        {/* Play Button Overlay - Centered on entire screen */}
+        {!isPlaying && (
+          <View
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              justifyContent: "center",
+              alignItems: "center",
+              zIndex: 2,
+              pointerEvents: "none", // Allow touches to pass through to the Pressable below
+            }}
+          >
+            <View
+              className="justify-center items-center w-20 h-20 rounded-full"
+              style={{
+                backgroundColor: "rgba(255, 255, 255, 0.9)",
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.3,
+                shadowRadius: 4,
+                elevation: 5,
+              }}
+            >
+              <AntDesign name="caretright" size={24} color="black" />
             </View>
-          )}
-        </Pressable>
+          </View>
+        )}
 
         {/* Right Side Button Overlay */}
         <View
           className="absolute right-4 justify-center items-center"
           style={{
-            top: screenHeight / 2 - 30, // Center vertically with some offset
+            top: screenHeight / 2 - 30,
             zIndex: 3,
           }}
         >
@@ -208,7 +220,7 @@ const VideoItemComponent = ({
               className="absolute -bottom-2 left-1/2 justify-center items-center w-6 h-6 rounded-full border-2 border-white transform -translate-x-1/2"
               style={{
                 backgroundColor: isFollowing ? "#gray" : "#FF7200FF",
-                marginLeft: -12, // Center the button
+                marginLeft: -12,
               }}
             >
               <AntDesign
@@ -219,7 +231,7 @@ const VideoItemComponent = ({
             </Pressable>
           </Pressable>
 
-          {/* Like Button */}
+          {/* Like Button - Always filled heart */}
           <Pressable
             onPress={handleLikePress}
             className="justify-center items-center mb-6"
@@ -232,14 +244,14 @@ const VideoItemComponent = ({
             }}
           >
             <AntDesign
-              name={isLiked ? "heart" : "hearto"}
+              name="heart"
               size={30}
               color={isLiked ? "#FF0000" : "white"}
             />
             <Text className="mt-1 text-xs text-white">125</Text>
           </Pressable>
 
-          {/* Comment Button */}
+          {/* Comment Button - Filled */}
           <Pressable
             onPress={handleCommentPress}
             className="justify-center items-center mb-6"
@@ -251,13 +263,13 @@ const VideoItemComponent = ({
               elevation: 5,
             }}
           >
-            <FontAwesome name="comment-o" size={28} color="white" />
+            <FontAwesome name="comment" size={28} color="white" />
             <Text className="mt-1 text-xs text-white">42</Text>
           </Pressable>
 
-          {/* Repost Button */}
+          {/* Adapt Button - Custom Circle with A */}
           <Pressable
-            onPress={handleRepostPress}
+            onPress={handleAdaptPress}
             className="justify-center items-center mb-6"
             style={{
               shadowColor: "#000",
@@ -267,8 +279,13 @@ const VideoItemComponent = ({
               elevation: 5,
             }}
           >
-            <MaterialIcons name="repeat" size={30} color="white" />
-            <Text className="mt-1 text-xs text-white">8</Text>
+            <View
+              className="justify-center items-center w-8 h-8 rounded-full border-2 border-white"
+              style={{ backgroundColor: "white" }}
+            >
+              <Text className="text-lg font-bold text-black">A</Text>
+            </View>
+            <Text className="mt-1 text-xs text-white">Adapt</Text>
           </Pressable>
 
           {/* Share Button */}
@@ -288,11 +305,11 @@ const VideoItemComponent = ({
           </Pressable>
         </View>
 
-        {/* Description Overlay - Positioned above tab bar */}
+        {/* Description Overlay */}
         <View
           className="absolute left-0 right-20 p-6"
           style={{
-            bottom: 20, // Position above the tab bar area
+            bottom: 20,
             zIndex: 2,
           }}
         >
@@ -300,7 +317,6 @@ const VideoItemComponent = ({
             @{item.User.username}
           </Text>
 
-          {/* Description with See More/Less */}
           <View>
             <Text className="text-base font-medium leading-6 text-white drop-shadow-lg">
               {getDisplayText()}
