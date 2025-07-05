@@ -29,7 +29,6 @@ export default function MessageScreen() {
 
   const handleChatSelect = (userId: string, username: string) => {
     try {
-      console.log("Chat selected:", { userId, username });
       setCurrentConversation({ userId, username });
       setViewState("conversation");
     } catch (error) {
@@ -40,7 +39,6 @@ export default function MessageScreen() {
 
   const handleBackToList = () => {
     try {
-      console.log("Going back to chat list");
       setViewState("list");
       setCurrentConversation(null);
     } catch (error) {
@@ -50,8 +48,6 @@ export default function MessageScreen() {
 
   const handleStartNewChat = (userId: string, username: string) => {
     try {
-      console.log("Starting new chat with:", { userId, username });
-
       if (!userId || !username) {
         throw new Error("Invalid user data");
       }

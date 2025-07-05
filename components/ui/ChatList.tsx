@@ -169,7 +169,6 @@ export default function ChatList({
           filter: `chat_user_id=eq.${user.id}`,
         },
         (payload) => {
-          console.log("New message received:", payload);
           fetchChats(); // Refresh the chat list
         }
       )
@@ -182,7 +181,6 @@ export default function ChatList({
           filter: `user_id=eq.${user.id}`,
         },
         (payload) => {
-          console.log("New message sent:", payload);
           fetchChats(); // Refresh the chat list
         }
       )
@@ -225,13 +223,13 @@ export default function ChatList({
 
   const renderChatItem = ({ item }: { item: ChatPreview }) => (
     <TouchableOpacity
-      className="flex-row items-center px-4 py-3 bg-gray-800 active:bg-gray-700 border-b border-gray-700"
+      className="flex-row items-center px-4 py-3 bg-gray-800 border-b border-gray-700 active:bg-gray-700"
       onPress={() => onChatSelect(item.otherUser.id, item.otherUser.username)}
     >
       {/* Avatar */}
       <View className="relative">
-        <View className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 items-center justify-center shadow-sm">
-          <Text className="text-white font-bold text-lg">
+        <View className="justify-center items-center w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full shadow-sm">
+          <Text className="text-lg font-bold text-white">
             {item.otherUser.username.charAt(0).toUpperCase()}
           </Text>
         </View>
@@ -241,8 +239,8 @@ export default function ChatList({
 
       {/* Chat content */}
       <View className="flex-1 ml-3">
-        <View className="flex-row items-center justify-between mb-1">
-          <Text className="font-semibold text-white text-base">
+        <View className="flex-row justify-between items-center mb-1">
+          <Text className="text-base font-semibold text-white">
             {item.otherUser.username}
           </Text>
           <Text className="text-xs text-gray-400">
@@ -264,8 +262,8 @@ export default function ChatList({
           </Text>
 
           {item.unreadCount > 0 && (
-            <View className="ml-2 w-5 h-5 bg-blue-500 rounded-full items-center justify-center">
-              <Text className="text-white text-xs font-bold">
+            <View className="justify-center items-center ml-2 w-5 h-5 bg-blue-500 rounded-full">
+              <Text className="text-xs font-bold text-white">
                 {item.unreadCount > 9 ? "9+" : item.unreadCount}
               </Text>
             </View>
@@ -279,7 +277,7 @@ export default function ChatList({
     return (
       <View className="flex-1 justify-center items-center bg-gray-900">
         <ActivityIndicator size="large" color="#3B82F6" />
-        <Text className="mt-3 text-gray-300 font-medium">Loading chats...</Text>
+        <Text className="mt-3 font-medium text-gray-300">Loading chats...</Text>
       </View>
     );
   }
@@ -288,7 +286,7 @@ export default function ChatList({
     <View className="flex-1 bg-gray-900">
       {/* Search Bar - Always visible under header */}
       <View className="px-4 py-3 bg-gray-800 border-b border-gray-700">
-        <View className="flex-row items-center bg-gray-700 rounded-full border border-gray-600 px-4 py-2">
+        <View className="flex-row items-center px-4 py-2 bg-gray-700 rounded-full border border-gray-600">
           <Search size={20} color="#9CA3AF" />
           <TextInput
             value={searchQuery}
@@ -319,13 +317,13 @@ export default function ChatList({
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View className="flex-1 justify-center items-center py-32">
-            <View className="w-20 h-20 rounded-full bg-gray-800 items-center justify-center mb-4">
+            <View className="justify-center items-center mb-4 w-20 h-20 bg-gray-800 rounded-full">
               <MessageCircle size={32} color="#6B7280" />
             </View>
-            <Text className="text-xl font-semibold text-white mb-2">
+            <Text className="mb-2 text-xl font-semibold text-white">
               {searchQuery ? "No conversations found" : "No messages yet"}
             </Text>
-            <Text className="text-gray-400 text-center px-8 leading-5">
+            <Text className="px-8 leading-5 text-center text-gray-400">
               {searchQuery
                 ? `No conversations found for "${searchQuery}"`
                 : "Start a conversation by tapping the search button"}
