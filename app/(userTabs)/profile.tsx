@@ -3,113 +3,36 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-  Modal,
+  RefreshControl,
   SafeAreaView,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import {
+  LikedVideos,
+  Orders,
+  SettingsModal,
+  useLikedVideosCount,
+} from "../../components/userTabs";
 import { useAuth } from "../provider/AuthProvider";
 
 export default function Profile() {
-  const { user, SignOut, loading } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"liked" | "orders">("liked");
   const [showSettings, setShowSettings] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const SettingsModal = () => (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={showSettings}
-      onRequestClose={() => setShowSettings(false)}
-    >
-      <View className="flex-1 justify-end bg-black/50">
-        <View className="p-6 bg-white rounded-t-3xl max-h-2/3">
-          <View className="flex-row justify-between items-center mb-6">
-            <Text className="text-xl font-bold text-gray-900">Settings</Text>
-            <TouchableOpacity onPress={() => setShowSettings(false)}>
-              <Text className="text-2xl text-gray-500">✕</Text>
-            </TouchableOpacity>
-          </View>
+  // Get liked videos count for stats
+  const likedVideosCount = useLikedVideosCount();
 
-          <View className="space-y-4">
-            <TouchableOpacity className="py-4 border-b border-gray-200">
-              <Text className="font-medium text-gray-700">Notifications</Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="py-4 border-b border-gray-200">
-              <Text className="font-medium text-gray-700">Privacy</Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="py-4 border-b border-gray-200">
-              <Text className="font-medium text-gray-700">Help & Support</Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="py-4 border-b border-gray-200">
-              <Text className="font-medium text-gray-700">About</Text>
-            </TouchableOpacity>
-
-            {user && (
-              <TouchableOpacity
-                className={`w-full py-4 rounded-xl mt-6 ${loading ? "opacity-70" : ""}`}
-                style={{ backgroundColor: loading ? "#D1D5DB" : "#FF2D55" }}
-                onPress={() => {
-                  setShowSettings(false);
-                  SignOut();
-                }}
-                disabled={loading}
-              >
-                <Text className="text-lg font-bold text-center text-white">
-                  {loading ? "Signing Out..." : "Sign Out"}
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-      </View>
-    </Modal>
-  );
-
-  const LikedVideosContent = () => (
-    <View className="flex-1 mb-6">
-      <View className="flex-row flex-wrap">
-        {/* Placeholder for liked videos grid */}
-        <View className="p-1 w-1/3">
-          <View className="justify-center items-center bg-gray-200 rounded-lg aspect-square">
-            <Text className="text-4xl">🐕</Text>
-          </View>
-        </View>
-        <View className="p-1 w-1/3">
-          <View className="justify-center items-center bg-gray-200 rounded-lg aspect-square">
-            <Text className="text-4xl">🐱</Text>
-          </View>
-        </View>
-        <View className="p-1 w-1/3">
-          <View className="justify-center items-center bg-gray-200 rounded-lg aspect-square">
-            <Text className="text-4xl">🐰</Text>
-          </View>
-        </View>
-        <View className="p-1 w-1/3">
-          <View className="justify-center items-center bg-gray-200 rounded-lg aspect-square">
-            <Text className="text-4xl">🐦</Text>
-          </View>
-        </View>
-      </View>
-    </View>
-  );
-
-  const OrdersContent = () => (
-    <View className="flex-1 mb-6">
-      <View className="flex-1 justify-center items-center py-12">
-        <Text className="mb-4 text-6xl">📋</Text>
-        <Text className="mb-2 text-xl font-semibold text-gray-900">
-          No orders yet
-        </Text>
-        <Text className="text-center text-gray-500">
-          Your pet-related orders will appear here
-        </Text>
-      </View>
-    </View>
-  );
+  const onRefresh = async () => {
+    setRefreshing(true);
+    // The refresh logic is handled by individual components
+    setTimeout(() => setRefreshing(false), 1000);
+  };
 
   if (!user) {
     // Guest user view - TikTok style
@@ -257,12 +180,15 @@ export default function Profile() {
                 </Text>
               </View>
             ) : (
-              <OrdersContent />
+              <Orders isActive={activeTab === "orders"} />
             )}
           </View>
         </ScrollView>
 
-        <SettingsModal />
+        <SettingsModal
+          visible={showSettings}
+          onClose={() => setShowSettings(false)}
+        />
       </SafeAreaView>
     );
   }
@@ -279,7 +205,18 @@ export default function Profile() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView className="flex-1">
+      <ScrollView
+        className="flex-1"
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#FF2D55"]}
+            tintColor="#FF2D55"
+          />
+        }
+        showsVerticalScrollIndicator={true}
+      >
         <View className="flex-1 px-6 py-4">
           {/* Profile Section */}
           <View className="items-center mb-8">
@@ -309,7 +246,9 @@ export default function Profile() {
                 <Text className="text-sm text-gray-500">Followers</Text>
               </View>
               <View className="items-center">
-                <Text className="text-lg font-bold text-gray-900">0</Text>
+                <Text className="text-lg font-bold text-gray-900">
+                  {likedVideosCount}
+                </Text>
                 <Text className="text-sm text-gray-500">Likes</Text>
               </View>
             </View>
@@ -371,11 +310,22 @@ export default function Profile() {
           </View>
 
           {/* Tab Content */}
-          {activeTab === "liked" ? <LikedVideosContent /> : <OrdersContent />}
+          {activeTab === "liked" ? (
+            <LikedVideos
+              isActive={activeTab === "liked"}
+              onRefresh={onRefresh}
+              refreshing={refreshing}
+            />
+          ) : (
+            <Orders isActive={activeTab === "orders"} />
+          )}
         </View>
       </ScrollView>
 
-      <SettingsModal />
+      <SettingsModal
+        visible={showSettings}
+        onClose={() => setShowSettings(false)}
+      />
     </SafeAreaView>
   );
 }
