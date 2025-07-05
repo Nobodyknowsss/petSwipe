@@ -14,6 +14,7 @@ import {
   View,
 } from "react-native";
 import { supabase } from "../../utils/supabase";
+import { useAuth } from "../provider/AuthProvider";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -31,13 +32,25 @@ interface Pet {
   createdAt: string;
 }
 
+interface AdoptionProfile {
+  id: number;
+  user_id: string;
+  first_name: string;
+  last_name: string;
+  phone: string;
+  email: string;
+  // ... other fields
+}
+
 export default function PetDetails() {
+  const { user } = useAuth();
   const { userId, petId, showFirst, fromVideo, videoDate } =
     useLocalSearchParams();
   const [pets, setPets] = useState<Pet[]>([]);
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
   const [loading, setLoading] = useState(true);
   const [step, setStep] = useState<"list" | "details">("list");
+  const [adoptionLoading, setAdoptionLoading] = useState(false);
 
   useEffect(() => {
     if (petId) {
@@ -52,10 +65,140 @@ export default function PetDetails() {
         fetchUserPets(userId as string);
       }
     } else {
-      // Show all pets available for adoption
-      fetchAllPets();
+      // No pet or user specified, go back
+      Alert.alert("Error", "No pet specified to view.");
+      router.back();
     }
   }, [userId, petId, showFirst, fromVideo, videoDate]);
+
+  // Add new utility functions for adoption flow
+  const checkAdoptionProfile = async (userId: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase
+        .from("Adoption Profile")
+        .select("id, first_name, last_name, phone, email")
+        .eq("user_id", userId)
+        .single();
+
+      if (error || !data) {
+        return false;
+      }
+
+      // Check if required fields are filled
+      return !!(data.first_name && data.last_name && data.phone && data.email);
+    } catch (error) {
+      console.error("Error checking adoption profile:", error);
+      return false;
+    }
+  };
+
+  const createAdoptionRequest = async (petId: string, userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("Adoption_Request")
+        .insert([
+          {
+            user_id: userId,
+            pet_id: petId,
+            status: "pending",
+            message: `Interest expressed in adopting ${selectedPet?.name}`,
+            updatedAt: new Date().toISOString(),
+          },
+        ])
+        .select()
+        .single();
+
+      if (error) {
+        // Check if it's a duplicate request error
+        if (error.code === "23505") {
+          Alert.alert(
+            "Already Applied",
+            "You have already expressed interest in this pet. Check your adoption requests in My Pets."
+          );
+          return false;
+        }
+        throw error;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error creating adoption request:", error);
+      Alert.alert(
+        "Error",
+        "Failed to submit adoption request. Please try again."
+      );
+      return false;
+    }
+  };
+
+  const handleAdoptionInterest = async () => {
+    if (!user) {
+      Alert.alert(
+        "Login Required",
+        "Please log in to express interest in adoption."
+      );
+      return;
+    }
+
+    if (!selectedPet) {
+      Alert.alert("Error", "Pet information not found.");
+      return;
+    }
+
+    Alert.alert("Adopt", `Would you like to adopt ${selectedPet.name}?`, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Yes",
+        onPress: async () => {
+          setAdoptionLoading(true);
+          try {
+            // Check if user has completed adoption profile
+            const hasProfile = await checkAdoptionProfile(user.id);
+
+            if (!hasProfile) {
+              Alert.alert(
+                "Complete Your Profile",
+                "You need to complete your adoption profile before expressing interest in pets.",
+                [
+                  { text: "Cancel", style: "cancel" },
+                  {
+                    text: "Complete Profile",
+                    onPress: () => router.push("/(adoptionProfile)/page"),
+                  },
+                ]
+              );
+              return;
+            }
+
+            // Create adoption request
+            const success = await createAdoptionRequest(
+              selectedPet.id,
+              user.id
+            );
+
+            if (success) {
+              Alert.alert(
+                "Success!",
+                `Your interest in ${selectedPet.name} has been submitted! You can track your adoption requests in My Pets.`,
+                [
+                  {
+                    text: "View My Pets",
+                    onPress: () => router.push("/(userTabs)/myPets"),
+                  },
+                  { text: "OK", style: "default" },
+                ]
+              );
+            }
+          } catch (error) {
+            console.error("Error in adoption process:", error);
+            Alert.alert("Error", "Something went wrong. Please try again.");
+          } finally {
+            setAdoptionLoading(false);
+          }
+        },
+      },
+    ]);
+  };
 
   const fetchSinglePet = async (id: string) => {
     try {
@@ -105,29 +248,6 @@ export default function PetDetails() {
       }
     } catch (error) {
       console.error("Error fetching pets:", error);
-      Alert.alert("Error", "Failed to load pets.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchAllPets = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from("Pet")
-        .select("*")
-        .order("createdAt", { ascending: false });
-
-      if (error) {
-        console.error("Error fetching all pets:", error);
-        Alert.alert("Error", "Failed to load pets.");
-        return;
-      }
-
-      setPets(data || []);
-    } catch (error) {
-      console.error("Error fetching all pets:", error);
       Alert.alert("Error", "Failed to load pets.");
     } finally {
       setLoading(false);
@@ -358,31 +478,33 @@ export default function PetDetails() {
         </View>
       )}
 
-      {/* Contact Button */}
+      {/* Updated Contact Button */}
       <View className="mx-4 mb-8">
         <TouchableOpacity
           className="py-5 rounded-2xl"
           style={{
-            backgroundColor: "#FF7200FF",
+            backgroundColor: adoptionLoading ? "#CCC" : "#FF7200FF",
             shadowColor: "#FF7200FF",
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.3,
             shadowRadius: 12,
             elevation: 8,
           }}
-          onPress={() => {
-            Alert.alert("Adopt", `Would you like adopt ${pet.name}?`, [
-              { text: "Cancel", style: "cancel" },
-              {
-                text: "Yes",
-                onPress: () => console.log("Contact pressed for", pet.name),
-              },
-            ]);
-          }}
+          onPress={handleAdoptionInterest}
+          disabled={adoptionLoading}
         >
-          <Text className="text-lg font-bold text-center text-white">
-            Interested in {pet.name}?
-          </Text>
+          {adoptionLoading ? (
+            <View className="flex-row justify-center items-center">
+              <ActivityIndicator size="small" color="white" />
+              <Text className="ml-2 text-lg font-bold text-center text-white">
+                Processing...
+              </Text>
+            </View>
+          ) : (
+            <Text className="text-lg font-bold text-center text-white">
+              Interested in {pet.name}?
+            </Text>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -427,11 +549,7 @@ export default function PetDetails() {
             </TouchableOpacity>
             <View className="flex-1">
               <Text className="text-2xl font-bold text-gray-800">
-                {step === "details"
-                  ? selectedPet?.name
-                  : !userId && !petId
-                    ? "Available Pets"
-                    : "Pet Selection"}
+                {step === "details" ? selectedPet?.name : "Pet Selection"}
               </Text>
               {step === "list" && (
                 <Text className="mt-1 text-sm text-gray-500">
@@ -450,9 +568,7 @@ export default function PetDetails() {
               {pets.length > 0 && (
                 <View className="mb-6">
                   <Text className="mb-2 text-lg font-bold text-gray-800">
-                    {!userId && !petId
-                      ? "Find your perfect companion"
-                      : "Choose a pet to learn more"}
+                    Choose a pet to learn more
                   </Text>
                   <Text className="text-gray-600">
                     Tap on any pet to view detailed information

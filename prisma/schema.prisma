@@ -11,33 +11,49 @@ datasource db {
 }
 
 model User {
-  id               String             @id @unique
-  username         String             @unique
-  email            String             @unique
-  verified         Boolean            @default(false)
-  createdAt        DateTime           @default(now())
-  Adoption_Profile Adoption_Profile[]
-  chats            Chat[]
-  comments         Comment[]
-  followers        Follower[]
-  likes            Like[]
-  pets             Pet[]
-  videos           Video[]
+  id                String             @id @unique
+  username          String             @unique
+  email             String             @unique
+  verified          Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  Adoption_Profile  Adoption_Profile[]
+  adoption_requests Adoption_Request[] 
+  chats             Chat[]
+  comments          Comment[]
+  followers         Follower[]
+  likes             Like[]
+  pets              Pet[]
+  videos            Video[]
 }
 
 model Pet {
-  id          String   @id @default(dbgenerated("uuid_generate_v4()"))
-  name        String
-  breed       String
-  age         Int
-  gender      String
-  location    String
-  description String
-  photoUrl    String
-  videoUrl    String
-  ownerId     String
-  createdAt   DateTime @default(now())
-  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  id                String             @id @default(dbgenerated("uuid_generate_v4()"))
+  name              String
+  breed             String
+  age               Int
+  gender            String
+  location          String
+  description       String
+  photoUrl          String
+  videoUrl          String
+  ownerId           String
+  createdAt         DateTime           @default(now())
+  owner             User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  adoption_requests Adoption_Request[] 
+}
+
+model Adoption_Request {
+  id         String   @id @default(dbgenerated("uuid_generate_v4()"))
+  user_id    String
+  pet_id     String
+  status     String   @default("pending")
+  message    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  pet        Pet      @relation(fields: [pet_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, pet_id]) 
 }
 
 model Video {
