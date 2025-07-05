@@ -153,7 +153,7 @@ export default function MyPets() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
-        return "#FCD34D"; // Bright Yellow
+        return "#f47c0b"; // Bright Yellow
       case "approved":
         return "#34D399"; // Bright Green
       case "rejected":
@@ -250,7 +250,7 @@ export default function MyPets() {
 
         {/* Action Buttons */}
         {request.status === "pending" && (
-          <View className="flex-row mt-4 space-x-3">
+          <View className="flex-row gap-4 mt-4 space-x-3">
             <TouchableOpacity
               className="flex-1 py-3 rounded-2xl"
               style={{ backgroundColor: "#F3F4F6" }}
