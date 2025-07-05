@@ -127,7 +127,7 @@ export default function ManagePets() {
   };
 
   return (
-    <View className="flex-1 mb-36 bg-gradient-to-b from-orange-50 to-white">
+    <View className="flex-1 mb-28" style={{ backgroundColor: "#3b3b3b" }}>
       {/* Compact Header */}
       <View className="px-6 pt-8 pb-4">
         <View className="items-center">
@@ -137,10 +137,10 @@ export default function ManagePets() {
           >
             <Text className="text-xl">🏠</Text>
           </View>
-          <Text className="mb-1 text-xl font-bold text-center text-gray-800">
+          <Text className="mb-1 text-xl font-bold text-center text-white">
             Pet Management
           </Text>
-          <Text className="px-4 text-sm leading-4 text-center text-gray-600">
+          <Text className="px-4 text-sm leading-4 text-center text-white">
             Manage your beloved pets in one place
           </Text>
         </View>
@@ -178,7 +178,7 @@ export default function ManagePets() {
 
         {/* Compact Quick Stats */}
         <View className="mb-4">
-          <Text className="mb-3 text-base font-bold text-gray-800">
+          <Text className="mb-3 text-base font-bold text-white">
             Quick Overview
           </Text>
           <View className="flex-row">
