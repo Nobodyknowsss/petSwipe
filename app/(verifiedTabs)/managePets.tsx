@@ -1,7 +1,11 @@
 "use client";
 
+import { useFocusEffect } from "@react-navigation/native";
 import { router } from "expo-router";
-import { Text, TouchableOpacity, View } from "react-native";
+import { useCallback, useState } from "react";
+import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
+import { supabase } from "../../utils/supabase";
+import { useAuth } from "../provider/AuthProvider";
 
 // Compact Dashboard Card Component
 const DashboardCard = ({
@@ -87,10 +91,12 @@ const StatsCard = ({
   value,
   label,
   color,
+  loading = false,
 }: {
-  value: string;
+  value: string | number;
   label: string;
   color: string;
+  loading?: boolean;
 }) => (
   <View
     className="flex-1 p-3 mx-1 bg-white rounded-xl"
@@ -103,9 +109,13 @@ const StatsCard = ({
     }}
   >
     <View className="items-center">
-      <Text className="mb-1 text-xl font-bold" style={{ color: color }}>
-        {value}
-      </Text>
+      {loading ? (
+        <ActivityIndicator size="small" color={color} />
+      ) : (
+        <Text className="mb-1 text-xl font-bold" style={{ color: color }}>
+          {value}
+        </Text>
+      )}
       <Text className="text-xs font-medium text-center text-gray-600">
         {label}
       </Text>
@@ -114,6 +124,59 @@ const StatsCard = ({
 );
 
 export default function ManagePets() {
+  const { user } = useAuth();
+  const [stats, setStats] = useState({
+    totalPets: 0,
+    totalPosts: 0,
+  });
+  const [loading, setLoading] = useState(true);
+
+  // Fetch stats when screen focuses
+  useFocusEffect(
+    useCallback(() => {
+      if (user) {
+        fetchStats();
+      }
+    }, [user])
+  );
+
+  const fetchStats = async () => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+
+      // Fetch total pets count
+      const { count: petsCount, error: petsError } = await supabase
+        .from("Pet")
+        .select("*", { count: "exact", head: true })
+        .eq("ownerId", user.id);
+
+      // Fetch total posts/videos count
+      const { count: postsCount, error: postsError } = await supabase
+        .from("Video")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id);
+
+      if (petsError) {
+        console.error("Error fetching pets count:", petsError);
+      }
+
+      if (postsError) {
+        console.error("Error fetching posts count:", postsError);
+      }
+
+      setStats({
+        totalPets: petsCount || 0,
+        totalPosts: postsCount || 0,
+      });
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleNavigateToPets = () => {
     router.push("./petsList");
   };
@@ -126,8 +189,30 @@ export default function ManagePets() {
     router.push("./createPost");
   };
 
+  if (!user) {
+    return (
+      <View
+        className="flex-1 justify-center items-center mb-28"
+        style={{ backgroundColor: "#3b3b3b" }}
+      >
+        <View
+          className="justify-center items-center mb-4 w-20 h-20 rounded-full"
+          style={{ backgroundColor: "#4A4A4A" }}
+        >
+          <Text className="text-3xl">🔒</Text>
+        </View>
+        <Text className="mb-2 text-xl font-bold text-white">
+          Login Required
+        </Text>
+        <Text className="text-center text-gray-300">
+          Please log in to manage your pets
+        </Text>
+      </View>
+    );
+  }
+
   return (
-    <View className="flex-1 mb-36 bg-gradient-to-b from-orange-50 to-white">
+    <View className="flex-1 mb-28" style={{ backgroundColor: "#3b3b3b" }}>
       {/* Compact Header */}
       <View className="px-6 pt-8 pb-4">
         <View className="items-center">
@@ -137,10 +222,10 @@ export default function ManagePets() {
           >
             <Text className="text-xl">🏠</Text>
           </View>
-          <Text className="mb-1 text-xl font-bold text-center text-gray-800">
+          <Text className="mb-1 text-xl font-bold text-center text-white">
             Pet Management
           </Text>
-          <Text className="px-4 text-sm leading-4 text-center text-gray-600">
+          <Text className="px-4 text-sm leading-4 text-center text-white">
             Manage your beloved pets in one place
           </Text>
         </View>
@@ -178,12 +263,22 @@ export default function ManagePets() {
 
         {/* Compact Quick Stats */}
         <View className="mb-4">
-          <Text className="mb-3 text-base font-bold text-gray-800">
+          <Text className="mb-3 text-base font-bold text-white">
             Quick Overview
           </Text>
           <View className="flex-row">
-            <StatsCard value="7" label="Total Pets" color="#FF7200FF" />
-            <StatsCard value="0" label="Posts Created" color="#10B981" />
+            <StatsCard
+              value={stats.totalPets}
+              label="Total Pets"
+              color="#FF7200FF"
+              loading={loading}
+            />
+            <StatsCard
+              value={stats.totalPosts}
+              label="Posts Created"
+              color="#10B981"
+              loading={loading}
+            />
           </View>
         </View>
       </View>

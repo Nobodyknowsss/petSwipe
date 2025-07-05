@@ -264,14 +264,29 @@ export default function EditPet() {
   const loadPetData = async () => {
     try {
       setLoadingPet(true);
+
+      // Get current user
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        Alert.alert("Error", "You must be logged in to edit pets.");
+        router.back();
+        return;
+      }
+
       const { data, error } = await supabase
         .from("Pet")
         .select("*")
         .eq("id", petId)
+        .eq("ownerId", user.id) // CRITICAL: Only allow editing pets owned by current user
         .single();
 
       if (error || !data) {
-        Alert.alert("Error", "Failed to load pet data.");
+        Alert.alert(
+          "Error",
+          "Pet not found or you don't have permission to edit this pet."
+        );
         router.back();
         return;
       }
