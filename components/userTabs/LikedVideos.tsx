@@ -82,8 +82,6 @@ const VideoPlayerModal = ({
         return;
       }
 
-      console.log("Loading video:", video.signedUrl);
-
       // Auto-play when modal opens
       const playTimeout = setTimeout(() => {
         try {
@@ -93,7 +91,6 @@ const VideoPlayerModal = ({
             setIsPlaying(true);
             setLoading(false);
           } else {
-            console.warn("Video player not ready for playback");
             setLoading(false);
           }
         } catch (err) {
@@ -294,7 +291,6 @@ const VideoThumbnail = ({ video }: { video: LikedVideo["video"] }) => {
   useEffect(() => {
     if (!video.signedUrl || video.signedUrl === "") {
       setHasError(true);
-      console.warn("VideoThumbnail: No signed URL for video", video.id);
     } else {
       setHasError(false);
     }
@@ -306,9 +302,7 @@ const VideoThumbnail = ({ video }: { video: LikedVideo["video"] }) => {
       if (player && typeof player.pause === "function") {
         try {
           player.pause();
-        } catch (err) {
-          console.log("Thumbnail player cleanup completed");
-        }
+        } catch (err) {}
       }
       thumbnailPlayerRef.current = null;
     };
