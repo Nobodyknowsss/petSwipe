@@ -12,8 +12,8 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { supabase } from "../utils/supabase";
-import { useAuth } from "./provider/AuthProvider";
+import { useAuth } from "../app/provider/AuthProvider";
+import { supabase } from "./supabase";
 
 interface Comment {
   id: string;

@@ -16,8 +16,8 @@ import {
   Text,
   View,
 } from "react-native";
+import { CommentsModal, getCommentCount } from "../../utils/comments";
 import { supabase } from "../../utils/supabase";
-import { CommentsModal, getCommentCount } from "../comments";
 import { useAuth } from "../provider/AuthProvider";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
