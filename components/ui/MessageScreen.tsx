@@ -1,3 +1,5 @@
+"use client";
+
 import { Search } from "lucide-react-native";
 import React, { useState } from "react";
 import {
@@ -23,6 +25,7 @@ export default function MessageScreen() {
   const [currentConversation, setCurrentConversation] =
     useState<ConversationData | null>(null);
   const [showStartChatModal, setShowStartChatModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleChatSelect = (userId: string, username: string) => {
     try {
@@ -62,6 +65,10 @@ export default function MessageScreen() {
     }
   };
 
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+  };
+
   if (viewState === "conversation" && currentConversation) {
     return (
       <ChatConversation
@@ -73,16 +80,16 @@ export default function MessageScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <View className="flex-1 pb-20 bg-white">
+    <SafeAreaView className="flex-1 bg-gray-900">
+      <View className="flex-1 bg-gray-900" style={{ paddingBottom: 50 }}>
         {/* Header */}
-        <View className="px-4 py-3 bg-white border-b border-gray-200 shadow-sm">
+        <View className="px-4 py-3 bg-gray-800 border-b border-gray-700 shadow-sm">
           <View className="flex-row justify-between items-center">
             <View className="flex-row items-center">
-              <Text className="text-2xl font-bold text-gray-900">Chats</Text>
+              <Text className="text-2xl font-bold text-white">Chats</Text>
             </View>
 
-            {/* Single Search Button */}
+            {/* New Chat Button */}
             <TouchableOpacity
               onPress={() => setShowStartChatModal(true)}
               className="justify-center items-center w-10 h-10 bg-blue-500 rounded-full shadow-sm"
@@ -92,8 +99,12 @@ export default function MessageScreen() {
           </View>
         </View>
 
-        {/* Chat List */}
-        <ChatList onChatSelect={handleChatSelect} />
+        {/* Chat List with Search */}
+        <ChatList
+          onChatSelect={handleChatSelect}
+          searchQuery={searchQuery}
+          onSearchChange={handleSearchChange}
+        />
 
         {/* Start New Chat Modal */}
         <StartChatModal

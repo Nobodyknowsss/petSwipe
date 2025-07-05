@@ -66,8 +66,8 @@ export default function TypingIndicator({
 
   return (
     <Animated.View style={{ opacity }} className="px-4 mb-3 items-start">
-      <View className="flex-row items-center bg-gray-200 rounded-2xl rounded-bl-md px-4 py-2">
-        <Text className="text-gray-600 text-sm mr-2">{username} is typing</Text>
+      <View className="flex-row items-center bg-gray-700 rounded-2xl rounded-bl-md px-4 py-2">
+        <Text className="text-gray-300 text-sm mr-2">{username} is typing</Text>
         <View className="flex-row items-center space-x-1">
           <Animated.View
             style={{
@@ -81,7 +81,7 @@ export default function TypingIndicator({
                 },
               ],
             }}
-            className="w-1.5 h-1.5 rounded-full bg-gray-500"
+            className="w-1.5 h-1.5 rounded-full bg-gray-400"
           />
           <Animated.View
             style={{
@@ -95,7 +95,7 @@ export default function TypingIndicator({
                 },
               ],
             }}
-            className="w-1.5 h-1.5 rounded-full bg-gray-500"
+            className="w-1.5 h-1.5 rounded-full bg-gray-400"
           />
           <Animated.View
             style={{
@@ -109,7 +109,7 @@ export default function TypingIndicator({
                 },
               ],
             }}
-            className="w-1.5 h-1.5 rounded-full bg-gray-500"
+            className="w-1.5 h-1.5 rounded-full bg-gray-400"
           />
         </View>
       </View>

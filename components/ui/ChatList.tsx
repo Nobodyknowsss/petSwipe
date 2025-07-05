@@ -1,10 +1,11 @@
-import { MessageCircle } from "lucide-react-native";
+import { MessageCircle, Search, X } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
   RefreshControl,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -27,13 +28,20 @@ interface ChatPreview {
 
 interface ChatListProps {
   onChatSelect: (userId: string, username: string) => void;
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
 }
 
-export default function ChatList({ onChatSelect }: ChatListProps) {
+export default function ChatList({
+  onChatSelect,
+  searchQuery = "",
+  onSearchChange,
+}: ChatListProps) {
   const { user } = useAuth();
   const [chats, setChats] = useState<ChatPreview[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [filteredChats, setFilteredChats] = useState<ChatPreview[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -41,6 +49,20 @@ export default function ChatList({ onChatSelect }: ChatListProps) {
       subscribeToNewMessages();
     }
   }, [user]);
+
+  // Filter chats based on search query
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      const filtered = chats.filter((chat) =>
+        chat.otherUser.username
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase())
+      );
+      setFilteredChats(filtered);
+    } else {
+      setFilteredChats(chats);
+    }
+  }, [chats, searchQuery]);
 
   const fetchChats = async () => {
     if (!user) return;
@@ -195,29 +217,35 @@ export default function ChatList({ onChatSelect }: ChatListProps) {
     fetchChats();
   };
 
+  const clearSearch = () => {
+    if (onSearchChange) {
+      onSearchChange("");
+    }
+  };
+
   const renderChatItem = ({ item }: { item: ChatPreview }) => (
     <TouchableOpacity
-      className="flex-row items-center px-4 py-3 bg-white active:bg-gray-50"
+      className="flex-row items-center px-4 py-3 bg-gray-800 active:bg-gray-700 border-b border-gray-700"
       onPress={() => onChatSelect(item.otherUser.id, item.otherUser.username)}
     >
       {/* Avatar */}
       <View className="relative">
-        <View className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 items-center justify-center shadow-sm">
+        <View className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 items-center justify-center shadow-sm">
           <Text className="text-white font-bold text-lg">
             {item.otherUser.username.charAt(0).toUpperCase()}
           </Text>
         </View>
         {/* Online indicator */}
-        <View className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full border-2 border-white" />
+        <View className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full border-2 border-gray-800" />
       </View>
 
       {/* Chat content */}
       <View className="flex-1 ml-3">
         <View className="flex-row items-center justify-between mb-1">
-          <Text className="font-semibold text-gray-900 text-base">
+          <Text className="font-semibold text-white text-base">
             {item.otherUser.username}
           </Text>
-          <Text className="text-xs text-gray-500">
+          <Text className="text-xs text-gray-400">
             {formatTime(item.lastMessage.createdAt)}
           </Text>
         </View>
@@ -225,14 +253,12 @@ export default function ChatList({ onChatSelect }: ChatListProps) {
         <View className="flex-row items-center">
           <Text
             className={`flex-1 text-sm ${
-              item.unreadCount > 0
-                ? "text-gray-900 font-medium"
-                : "text-gray-600"
+              item.unreadCount > 0 ? "text-white font-medium" : "text-gray-300"
             }`}
             numberOfLines={1}
           >
             {item.lastMessage.isFromCurrentUser && (
-              <Text className="text-gray-500">You: </Text>
+              <Text className="text-gray-400">You: </Text>
             )}
             {item.lastMessage.text}
           </Text>
@@ -251,36 +277,58 @@ export default function ChatList({ onChatSelect }: ChatListProps) {
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-50">
-        <ActivityIndicator size="large" color="#0084FF" />
-        <Text className="mt-3 text-gray-600 font-medium">Loading chats...</Text>
+      <View className="flex-1 justify-center items-center bg-gray-900">
+        <ActivityIndicator size="large" color="#3B82F6" />
+        <Text className="mt-3 text-gray-300 font-medium">Loading chats...</Text>
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-gray-900">
+      {/* Search Bar - Always visible under header */}
+      <View className="px-4 py-3 bg-gray-800 border-b border-gray-700">
+        <View className="flex-row items-center bg-gray-700 rounded-full border border-gray-600 px-4 py-2">
+          <Search size={20} color="#9CA3AF" />
+          <TextInput
+            value={searchQuery}
+            onChangeText={onSearchChange}
+            placeholder="Search conversations..."
+            className="flex-1 ml-3 text-base text-white"
+            placeholderTextColor="#9CA3AF"
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={clearSearch} className="ml-2">
+              <X size={18} color="#9CA3AF" />
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+
       <FlatList
-        data={chats}
+        data={filteredChats}
         renderItem={renderChatItem}
         keyExtractor={(item) => item.id}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#3B82F6"
+          />
         }
         showsVerticalScrollIndicator={false}
-        ItemSeparatorComponent={() => (
-          <View className="mx-4 h-px bg-gray-100" />
-        )}
         ListEmptyComponent={
           <View className="flex-1 justify-center items-center py-32">
-            <View className="w-20 h-20 rounded-full bg-gray-100 items-center justify-center mb-4">
-              <MessageCircle size={32} color="#9CA3AF" />
+            <View className="w-20 h-20 rounded-full bg-gray-800 items-center justify-center mb-4">
+              <MessageCircle size={32} color="#6B7280" />
             </View>
-            <Text className="text-xl font-semibold text-gray-900 mb-2">
-              No messages yet
+            <Text className="text-xl font-semibold text-white mb-2">
+              {searchQuery ? "No conversations found" : "No messages yet"}
             </Text>
-            <Text className="text-gray-500 text-center px-8 leading-5">
-              Start a conversation by tapping the compose button
+            <Text className="text-gray-400 text-center px-8 leading-5">
+              {searchQuery
+                ? `No conversations found for "${searchQuery}"`
+                : "Start a conversation by tapping the search button"}
             </Text>
           </View>
         }
