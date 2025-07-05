@@ -44,7 +44,7 @@ interface AdoptionProfile {
 
 export default function PetDetails() {
   const { user } = useAuth();
-  const { userId, petId, showFirst, fromVideo, videoDate } =
+  const { userId, petId, showFirst, fromVideo, videoDate, fromMyPets } =
     useLocalSearchParams();
   const [pets, setPets] = useState<Pet[]>([]);
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
@@ -69,7 +69,7 @@ export default function PetDetails() {
       Alert.alert("Error", "No pet specified to view.");
       router.back();
     }
-  }, [userId, petId, showFirst, fromVideo, videoDate]);
+  }, [userId, petId, showFirst, fromVideo, videoDate, fromMyPets]);
 
   // Add new utility functions for adoption flow
   const checkAdoptionProfile = async (userId: string): Promise<boolean> => {
@@ -312,7 +312,10 @@ export default function PetDetails() {
   };
 
   const handleBack = () => {
-    if (fromVideo === "true") {
+    if (fromMyPets === "true") {
+      // If coming from My Pets, go back to My Pets
+      router.push("/(userTabs)/myPets");
+    } else if (fromVideo === "true") {
       // If coming from video, always go back to video feed
       router.back();
     } else if (step === "details" && pets.length > 1) {

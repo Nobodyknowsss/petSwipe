@@ -19,7 +19,7 @@ import { supabase } from "../../utils/supabase";
 import { useAuth } from "../provider/AuthProvider";
 
 const { height: screenHeight } = Dimensions.get("window");
-const HEADER_HEIGHT = screenHeight * 0.15;
+const HEADER_HEIGHT = screenHeight * 0.08;
 
 interface AdoptionRequest {
   id: string;
@@ -271,7 +271,9 @@ export default function MyPets() {
                 elevation: 4,
               }}
               onPress={() =>
-                router.push(`./petDetails?petId=${request.pet.id}`)
+                router.push(
+                  `./petDetails?petId=${request.pet.id}&fromMyPets=true`
+                )
               }
             >
               <Text className="font-bold text-center text-white">View Pet</Text>
