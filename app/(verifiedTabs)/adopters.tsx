@@ -62,7 +62,6 @@ export default function AdoptersPage() {
 
     try {
       setLoading(true);
-
       // Get adoption requests for pets owned by the current user
       const { data, error } = await supabase
         .from("Adoption_Request")
@@ -227,15 +226,15 @@ export default function AdoptersPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
-        return "#FCD34D"; // Yellow
+        return "#FF9500"; // Orange
       case "approved":
-        return "#34D399"; // Green
+        return "#34C759"; // Green
       case "rejected":
-        return "#F87171"; // Red
+        return "#FF3B30"; // Red
       case "withdrawn":
-        return "#9CA3AF"; // Gray
+        return "#8E8E93"; // Gray
       default:
-        return "#FCD34D";
+        return "#FF9500";
     }
   };
 
@@ -256,148 +255,136 @@ export default function AdoptersPage() {
 
   const AdopterCard = ({ request }: { request: AdoptionRequest }) => (
     <View
-      className="p-5 mb-4 bg-white rounded-2xl"
+      className="overflow-hidden mb-4 bg-white rounded-3xl"
       style={{
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.08,
-        shadowRadius: 12,
-        elevation: 6,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        elevation: 3,
       }}
     >
-      <View className="flex-row">
-        {/* Pet Image */}
-        <View className="mr-4">
-          <Image
-            source={{
-              uri:
-                request.pet.photoUrl ||
-                "https://via.placeholder.com/70x70/F3F4F6/9CA3AF?text=Pet",
-            }}
-            className="w-16 h-16 rounded-full"
-            style={{ backgroundColor: "#F3F4F6" }}
-          />
-        </View>
-
-        {/* Request Info */}
-        <View className="flex-1">
-          <View className="flex-row justify-between items-start mb-2">
-            <Text className="text-lg font-bold text-gray-800">
-              @{request.user.username}
-            </Text>
-            <View
-              className="px-3 py-1 rounded-full"
-              style={{
-                backgroundColor: `${getStatusColor(request.status)}30`,
+      <View className="p-5">
+        <View className="flex-row">
+          {/* Pet Image */}
+          <View className="mr-4">
+            <Image
+              source={{
+                uri:
+                  request.pet.photoUrl ||
+                  "https://via.placeholder.com/70x70/F3F4F6/9CA3AF?text=Pet",
               }}
-            >
-              <Text
-                className="text-xs font-bold"
-                style={{ color: getStatusColor(request.status) }}
-              >
-                {getStatusText(request.status)}
-              </Text>
-            </View>
+              className="w-16 h-16 rounded-2xl"
+              style={{ backgroundColor: "#F3F4F6" }}
+            />
           </View>
 
-          <Text className="mb-1 text-sm font-semibold text-gray-600">
-            Wants to adopt: {request.pet.name}
-          </Text>
-          <Text className="mb-1 text-xs text-gray-500">
-            {request.pet.breed} • {request.pet.age} years • {request.pet.gender}
-          </Text>
-          <Text className="mb-2 text-xs text-gray-500">
-            📍 {request.pet.location}
-          </Text>
-          <Text className="text-xs text-gray-400">
-            Applied: {new Date(request.createdAt).toLocaleDateString()}
-          </Text>
+          {/* Request Info */}
+          <View className="flex-1">
+            <View className="flex-row justify-between items-start mb-2">
+              <Text className="text-lg font-bold text-gray-900">
+                @{request.user.username}
+              </Text>
+              <View
+                className="px-3 py-1 rounded-full"
+                style={{ backgroundColor: getStatusColor(request.status) }}
+              >
+                <Text className="text-xs font-semibold text-white">
+                  {getStatusText(request.status)}
+                </Text>
+              </View>
+            </View>
+
+            <Text className="mb-1 text-sm font-semibold text-gray-600">
+              Wants to adopt: {request.pet.name}
+            </Text>
+            <Text className="mb-1 text-xs text-gray-500">
+              {request.pet.breed} • {request.pet.age} years •{" "}
+              {request.pet.gender}
+            </Text>
+            <Text className="mb-2 text-xs text-gray-500">
+              📍 {request.pet.location}
+            </Text>
+            <Text className="text-xs text-gray-400">
+              Applied: {new Date(request.createdAt).toLocaleDateString()}
+            </Text>
+          </View>
         </View>
-      </View>
 
-      {/* View Application Button - Always visible */}
-      <View className="mt-4">
-        <TouchableOpacity
-          className="py-3 rounded-2xl"
-          style={{
-            backgroundColor: "#8B5CF6",
-            shadowColor: "#8B5CF6",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.3,
-            shadowRadius: 8,
-            elevation: 4,
-          }}
-          onPress={() => handleViewApplication(request)}
-        >
-          <Text className="font-bold text-center text-white">
-            View Application
-          </Text>
-        </TouchableOpacity>
-      </View>
+        {/* Message Section */}
+        {request.message && (
+          <View className="p-3 mt-4 bg-gray-50 rounded-2xl">
+            <Text className="mb-1 text-xs font-semibold text-gray-500">
+              MESSAGE FROM ADOPTER:
+            </Text>
+            <Text className="text-sm text-gray-700">{request.message}</Text>
+          </View>
+        )}
 
-      {/* Action Buttons */}
-      {request.status === "pending" && (
-        <View className="flex-row mt-4 space-x-3">
+        {/* View Application Button - Always visible */}
+        <View className="mt-4">
           <TouchableOpacity
-            className="flex-1 py-3 rounded-2xl"
-            style={{ backgroundColor: "#F87171" }}
-            onPress={() =>
-              handleRejectRequest(
-                request.id,
-                request.pet.name,
-                request.user.username
-              )
-            }
+            className="py-3 rounded-2xl"
+            style={{ backgroundColor: "#007AFF" }}
+            onPress={() => handleViewApplication(request)}
           >
-            <Text className="font-bold text-center text-white">Reject</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className="flex-1 py-3 rounded-2xl"
-            style={{
-              backgroundColor: "#10B981",
-              shadowColor: "#10B981",
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 8,
-              elevation: 4,
-            }}
-            onPress={() =>
-              handleAcceptRequest(
-                request.id,
-                request.pet.name,
-                request.user.username
-              )
-            }
-          >
-            <Text className="font-bold text-center text-white">Accept</Text>
+            <Text className="font-semibold text-center text-white">
+              View Application
+            </Text>
           </TouchableOpacity>
         </View>
-      )}
 
-      {/* Message Section */}
-      {request.message && (
-        <View className="p-3 mt-4 bg-gray-50 rounded-xl">
-          <Text className="mb-1 text-xs font-semibold text-gray-500">
-            MESSAGE FROM ADOPTER:
-          </Text>
-          <Text className="text-sm text-gray-700">{request.message}</Text>
-        </View>
-      )}
+        {/* Action Buttons */}
+        {request.status === "pending" && (
+          <View className="flex-row gap-4 mt-3 space-x-3">
+            <TouchableOpacity
+              className="flex-1 py-3 rounded-2xl"
+              style={{ backgroundColor: "#FF3B30" }}
+              onPress={() =>
+                handleRejectRequest(
+                  request.id,
+                  request.pet.name,
+                  request.user.username
+                )
+              }
+            >
+              <Text className="font-semibold text-center text-white">
+                Reject
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              className="flex-1 py-3 rounded-2xl"
+              style={{ backgroundColor: "#34C759" }}
+              onPress={() =>
+                handleAcceptRequest(
+                  request.id,
+                  request.pet.name,
+                  request.user.username
+                )
+              }
+            >
+              <Text className="font-semibold text-center text-white">
+                Accept
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
     </View>
   );
 
   const EmptyState = () => (
-    <View className="justify-center items-center py-16">
+    <View className="justify-center items-center py-20">
       <View
-        className="justify-center items-center mb-4 w-20 h-20 rounded-full"
-        style={{ backgroundColor: "rgba(255, 114, 0, 0.1)" }}
+        className="justify-center items-center mb-6 w-32 h-32 rounded-full"
+        style={{ backgroundColor: "#4A4A4A" }}
       >
-        <Text className="text-3xl">👥</Text>
+        <Text className="text-5xl">👥</Text>
       </View>
-      <Text className="mb-2 text-xl font-bold text-gray-800">
+      <Text className="mb-3 text-2xl font-bold text-white">
         No adoption requests
       </Text>
-      <Text className="mb-6 text-center text-gray-600">
+      <Text className="px-8 leading-6 text-center text-gray-300">
         {searchQuery
           ? "No requests match your search terms"
           : "No one has applied to adopt your pets yet"}
@@ -407,31 +394,41 @@ export default function AdoptersPage() {
 
   if (!user) {
     return (
-      <View className="flex-1 justify-center items-center bg-gradient-to-b from-orange-50 to-white">
+      <View
+        className="flex-1 justify-center items-center"
+        style={{ backgroundColor: "#3b3b3b" }}
+      >
         <View
-          className="justify-center items-center mb-4 w-20 h-20 rounded-full"
-          style={{ backgroundColor: "rgba(255, 114, 0, 0.1)" }}
+          className="justify-center items-center mb-6 w-32 h-32 rounded-full"
+          style={{ backgroundColor: "#4A4A4A" }}
         >
-          <Text className="text-3xl">🔒</Text>
+          <Text className="text-5xl">🔒</Text>
         </View>
-        <Text className="mb-2 text-xl font-bold text-gray-800">
+        <Text className="mb-3 text-2xl font-bold text-white">
           Login Required
         </Text>
-        <Text className="text-center text-gray-600">
+        <Text className="px-8 leading-6 text-center text-gray-300">
           Please log in to view adoption requests
         </Text>
+        <TouchableOpacity
+          className="px-8 py-4 mt-6 rounded-2xl"
+          style={{ backgroundColor: "#007AFF" }}
+          onPress={() => router.push("/(auth)/login")}
+        >
+          <Text className="text-lg font-semibold text-white">Sign In</Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
   return (
-    <View className="flex-1 mb-28 bg-gradient-to-b from-orange-50 to-white">
+    <View className="flex-1 mb-28" style={{ backgroundColor: "#3b3b3b" }}>
       {/* Header */}
       <View className="px-6 pt-12 pb-6">
-        <Text className="mb-2 text-2xl font-bold text-center text-gray-800">
+        <Text className="mb-2 text-2xl font-bold text-center text-white">
           Adoption Requests
         </Text>
-        <Text className="mb-6 text-center text-gray-600">
+        <Text className="mb-6 text-center text-gray-300">
           Review applications for your pets
         </Text>
 
@@ -440,25 +437,26 @@ export default function AdoptersPage() {
           <TextInput
             placeholder="Search by adopter name, pet name, or breed..."
             placeholderTextColor="#9CA3AF"
-            className="px-5 py-4 pr-12 w-full text-base text-gray-800 bg-white rounded-2xl border-2 border-gray-100"
+            className="px-5 py-4 pr-12 w-full text-base text-gray-800 bg-white rounded-2xl"
             style={{
+              backgroundColor: "#FFFFFF",
               shadowColor: "#000",
               shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.05,
+              shadowOpacity: 0.1,
               shadowRadius: 8,
-              elevation: 2,
+              elevation: 3,
             }}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
           <View className="absolute top-4 right-4">
-            <Text className="text-lg text-gray-400">🔍</Text>
+            <Text className="text-lg text-gray-500">🔍</Text>
           </View>
         </View>
 
         {/* Results Counter */}
         {searchQuery && (
-          <Text className="mt-3 text-sm text-gray-600">
+          <Text className="mt-3 text-sm text-gray-300">
             {filteredRequests.length} request
             {filteredRequests.length !== 1 ? "s" : ""} found
           </Text>
@@ -466,28 +464,58 @@ export default function AdoptersPage() {
 
         {/* Quick Stats */}
         {adoptionRequests.length > 0 && (
-          <View className="flex-row mt-4 space-x-3">
-            <View className="flex-1 p-3 bg-white rounded-xl">
-              <Text className="text-lg font-bold text-center text-gray-800">
+          <View className="flex-row gap-4 mt-4 space-x-3">
+            <View
+              className="flex-1 p-4 rounded-2xl"
+              style={{
+                backgroundColor: "#FF9500",
+                shadowColor: "#FF9500",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.3,
+                shadowRadius: 6,
+                elevation: 2,
+              }}
+            >
+              <Text className="text-2xl font-bold text-center text-white">
                 {adoptionRequests.filter((r) => r.status === "pending").length}
               </Text>
-              <Text className="text-xs font-semibold text-center text-gray-500">
+              <Text className="text-xs font-semibold text-center text-white opacity-90">
                 PENDING
               </Text>
             </View>
-            <View className="flex-1 p-3 bg-white rounded-xl">
-              <Text className="text-lg font-bold text-center text-gray-800">
+            <View
+              className="flex-1 p-4 rounded-2xl"
+              style={{
+                backgroundColor: "#34C759",
+                shadowColor: "#34C759",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.3,
+                shadowRadius: 6,
+                elevation: 2,
+              }}
+            >
+              <Text className="text-2xl font-bold text-center text-white">
                 {adoptionRequests.filter((r) => r.status === "approved").length}
               </Text>
-              <Text className="text-xs font-semibold text-center text-gray-500">
+              <Text className="text-xs font-semibold text-center text-white opacity-90">
                 APPROVED
               </Text>
             </View>
-            <View className="flex-1 p-3 bg-white rounded-xl">
-              <Text className="text-lg font-bold text-center text-gray-800">
+            <View
+              className="flex-1 p-4 rounded-2xl"
+              style={{
+                backgroundColor: "#007AFF",
+                shadowColor: "#007AFF",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.3,
+                shadowRadius: 6,
+                elevation: 2,
+              }}
+            >
+              <Text className="text-2xl font-bold text-center text-white">
                 {adoptionRequests.length}
               </Text>
-              <Text className="text-xs font-semibold text-center text-gray-500">
+              <Text className="text-xs font-semibold text-center text-white opacity-90">
                 TOTAL
               </Text>
             </View>
@@ -503,16 +531,24 @@ export default function AdoptersPage() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#FF7200FF"
-            colors={["#FF7200FF"]}
+            tintColor="#FFFFFF"
+            colors={["#FFFFFF"]}
           />
         }
       >
         {loading ? (
-          <View className="justify-center items-center py-16">
-            <ActivityIndicator size="large" color="#FF7200FF" />
-            <Text className="mt-4 text-gray-600">
-              Loading adoption requests...
+          <View className="justify-center items-center py-20">
+            <View
+              className="justify-center items-center mb-4 w-20 h-20 rounded-full"
+              style={{ backgroundColor: "#4A4A4A" }}
+            >
+              <ActivityIndicator size="large" color="#FFFFFF" />
+            </View>
+            <Text className="text-lg font-semibold text-white">
+              Loading requests...
+            </Text>
+            <Text className="mt-1 text-sm text-gray-400">
+              Please wait a moment
             </Text>
           </View>
         ) : filteredRequests.length > 0 ? (
