@@ -16,8 +16,9 @@ model User {
   email             String             @unique
   verified          Boolean            @default(false)
   createdAt         DateTime           @default(now())
+  is_seller         Boolean            @default(false)
   Adoption_Profile  Adoption_Profile[]
-  adoption_requests Adoption_Request[] 
+  adoption_requests Adoption_Request[]
   chats             Chat[]
   comments          Comment[]
   followers         Follower[]
@@ -38,22 +39,22 @@ model Pet {
   videoUrl          String
   ownerId           String
   createdAt         DateTime           @default(now())
+  adoption_requests Adoption_Request[]
   owner             User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  adoption_requests Adoption_Request[] 
 }
 
 model Adoption_Request {
-  id         String   @id @default(dbgenerated("uuid_generate_v4()"))
-  user_id    String
-  pet_id     String
-  status     String   @default("pending")
-  message    String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  pet        Pet      @relation(fields: [pet_id], references: [id], onDelete: Cascade)
+  id        String   @id @default(dbgenerated("uuid_generate_v4()"))
+  user_id   String
+  pet_id    String
+  status    String   @default("pending")
+  message   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  pet       Pet      @relation(fields: [pet_id], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  @@unique([user_id, pet_id]) 
+  @@unique([user_id, pet_id])
 }
 
 model Video {

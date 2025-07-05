@@ -8,6 +8,7 @@ interface User {
   email: string;
   username: string;
   verified: boolean;
+  is_seller: boolean;
 }
 
 interface AuthContextType {
@@ -69,7 +70,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(data);
     if (data.verified) {
       router.replace("/(verifiedTabs)/home");
-    } else {
+    } else if (data.is_seller === true) {
+      router.replace("/(sellerTabs)/products");
+    }else {
       router.replace("/(userTabs)/home");
     }
   };
