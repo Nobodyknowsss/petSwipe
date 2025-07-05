@@ -17,6 +17,7 @@ import {
   View,
 } from "react-native";
 import { supabase } from "../../utils/supabase";
+import { CommentsModal, getCommentCount } from "../comments";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const TAB_BAR_HEIGHT = 50;
@@ -33,6 +34,7 @@ interface VideoItem {
     username: string;
   };
   createdAt: string;
+  commentCount?: number;
 }
 
 // TikTok-style Video Component
@@ -49,6 +51,8 @@ const VideoItemComponent = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [showCommentsModal, setShowCommentsModal] = useState(false);
+  const [commentCount, setCommentCount] = useState(item.commentCount || 0);
 
   const videoPlayer = useVideoPlayer(item.signedUrl || "", (player) => {
     player.loop = true;
@@ -67,6 +71,16 @@ const VideoItemComponent = ({
       setIsPlaying(false);
     }
   }, [isVisible, isScreenFocused, videoPlayer]);
+
+  // Fetch comment count when component mounts
+  useEffect(() => {
+    const fetchCommentCount = async () => {
+      const count = await getCommentCount(item.id);
+      setCommentCount(count);
+    };
+
+    fetchCommentCount();
+  }, [item.id]);
 
   const handleVideoPress = () => {
     if (!isScreenFocused) return;
@@ -112,6 +126,13 @@ const VideoItemComponent = ({
 
   const handleCommentPress = () => {
     console.log("Comment pressed for video:", item.id);
+    setShowCommentsModal(true);
+  };
+
+  const handleCommentsModalClose = () => {
+    setShowCommentsModal(false);
+    // Refresh comment count when modal closes
+    getCommentCount(item.id).then(setCommentCount);
   };
 
   const handleAdaptPress = () => {
@@ -278,7 +299,7 @@ const VideoItemComponent = ({
             }}
           >
             <FontAwesome name="comment" size={28} color="white" />
-            <Text className="mt-1 text-xs text-white">42</Text>
+            <Text className="mt-1 text-xs text-white">{commentCount}</Text>
           </Pressable>
 
           {/* Adapt Button - Custom Circle with A */}
@@ -349,6 +370,13 @@ const VideoItemComponent = ({
           </View>
         </View>
       </View>
+
+      {/* Comments Modal */}
+      <CommentsModal
+        visible={showCommentsModal}
+        onClose={handleCommentsModalClose}
+        videoId={item.id}
+      />
 
       {/* Black background for tab bar area */}
       <View className="bg-black" style={{ height: TAB_BAR_HEIGHT }} />
