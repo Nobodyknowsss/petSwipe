@@ -13,6 +13,7 @@ import {
   LikedVideos,
   Orders,
   SettingsModal,
+  useReceivedLikesCount,
 } from "../../components/verifiedTabs";
 import { useAuth } from "../provider/AuthProvider";
 
@@ -21,6 +22,9 @@ export default function Profile() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"liked" | "orders">("liked");
   const [showSettings, setShowSettings] = useState(false);
+
+  // Get received likes count for stats
+  const receivedLikesCount = useReceivedLikesCount();
 
   if (!user) {
     // Guest user view - TikTok style
@@ -223,7 +227,9 @@ export default function Profile() {
                 <Text className="text-sm text-gray-500">Followers</Text>
               </View>
               <View className="items-center">
-                <Text className="text-lg font-bold text-gray-900">0</Text>
+                <Text className="text-lg font-bold text-gray-900">
+                  {receivedLikesCount}
+                </Text>
                 <Text className="text-sm text-gray-500">Likes</Text>
               </View>
             </View>

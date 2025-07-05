@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../app/provider/AuthProvider";
 import { supabase } from "../../utils/supabase";
 
-export const useLikedVideosCount = () => {
+export const useReceivedLikesCount = () => {
   const { user } = useAuth();
   const [count, setCount] = useState(0);
 
@@ -11,11 +11,11 @@ export const useLikedVideosCount = () => {
       if (!user) return;
 
       try {
-        // Count likes on videos that the current user posted (not videos they liked)
+        // Count likes on videos that the current user posted
         const { count: receivedLikes, error } = await supabase
           .from("Like")
           .select("*", { count: "exact", head: true })
-          .eq("video_user_id", user.id); // Changed from user_id to video_user_id
+          .eq("video_user_id", user.id);
 
         if (error) {
           console.error("Error fetching received likes count:", error);

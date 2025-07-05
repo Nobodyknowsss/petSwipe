@@ -16,7 +16,7 @@ import {
   Text,
   View,
 } from "react-native";
-import { CommentsModal, getCommentCount } from "../../utils/comments";
+import { CommentsModal, getCommentCount } from "../../components/comments";
 import { supabase } from "../../utils/supabase";
 import { useAuth } from "../provider/AuthProvider";
 

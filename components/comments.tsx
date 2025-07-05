@@ -13,7 +13,7 @@ import {
   View,
 } from "react-native";
 import { useAuth } from "../app/provider/AuthProvider";
-import { supabase } from "./supabase";
+import { supabase } from "../utils/supabase";
 
 interface Comment {
   id: string;
@@ -184,7 +184,11 @@ export const CommentsModal = ({
         className="flex-1"
       >
         <View className="flex-1 bg-black/50">
-          <View className="flex-1 mt-20 bg-white rounded-t-3xl">
+          {/* Touchable overlay to close modal */}
+          <Pressable className="flex-1" onPress={onClose} />
+
+          {/* Modal content - 70% of screen height */}
+          <View className="bg-white rounded-t-3xl" style={{ height: "70%" }}>
             {/* Header */}
             <View className="flex-row justify-between items-center p-4 border-b border-gray-200">
               <Text className="text-lg font-bold text-gray-900">
