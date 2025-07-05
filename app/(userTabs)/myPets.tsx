@@ -421,21 +421,22 @@ export default function MyPets() {
               }
             >
               {/* Compact Stats */}
-              <View className="flex-row mb-5 space-x-2">
+              <View className="flex-row gap-4 mb-5 space-x-2">
                 <View
-                  className="flex-1 p-3 bg-white rounded-2xl"
+                  className="flex-1 p-3 rounded-2xl"
                   style={{
-                    shadowColor: "#000",
+                    backgroundColor: "#007AFF",
+                    shadowColor: "#007AFF",
                     shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.1,
+                    shadowOpacity: 0.3,
                     shadowRadius: 8,
                     elevation: 4,
                   }}
                 >
-                  <Text className="text-xl font-bold text-center text-gray-800">
+                  <Text className="text-xl font-bold text-center text-white">
                     {adoptionRequests.length}
                   </Text>
-                  <Text className="text-xs font-semibold text-center text-gray-500">
+                  <Text className="text-xs font-semibold text-center text-white opacity-90">
                     TOTAL
                   </Text>
                 </View>
@@ -443,21 +444,21 @@ export default function MyPets() {
                 <View
                   className="flex-1 p-3 rounded-2xl"
                   style={{
-                    backgroundColor: "#FCD34D",
-                    shadowColor: "#FCD34D",
+                    backgroundColor: "#FF9500",
+                    shadowColor: "#FF9500",
                     shadowOffset: { width: 0, height: 4 },
                     shadowOpacity: 0.3,
                     shadowRadius: 8,
                     elevation: 4,
                   }}
                 >
-                  <Text className="text-xl font-bold text-center text-gray-800">
+                  <Text className="text-xl font-bold text-center text-white">
                     {
                       adoptionRequests.filter((r) => r.status === "pending")
                         .length
                     }
                   </Text>
-                  <Text className="text-xs font-semibold text-center text-gray-700">
+                  <Text className="text-xs font-semibold text-center text-white opacity-90">
                     PENDING
                   </Text>
                 </View>
@@ -465,8 +466,8 @@ export default function MyPets() {
                 <View
                   className="flex-1 p-3 rounded-2xl"
                   style={{
-                    backgroundColor: "#34D399",
-                    shadowColor: "#34D399",
+                    backgroundColor: "#34C759",
+                    shadowColor: "#34C759",
                     shadowOffset: { width: 0, height: 4 },
                     shadowOpacity: 0.3,
                     shadowRadius: 8,
@@ -479,7 +480,7 @@ export default function MyPets() {
                         .length
                     }
                   </Text>
-                  <Text className="text-xs font-semibold text-center text-white">
+                  <Text className="text-xs font-semibold text-center text-white opacity-90">
                     APPROVED
                   </Text>
                 </View>
