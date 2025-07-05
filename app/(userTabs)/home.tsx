@@ -18,6 +18,7 @@ import {
 } from "react-native";
 import { supabase } from "../../utils/supabase";
 import { CommentsModal, getCommentCount } from "../comments";
+import { useAuth } from "../provider/AuthProvider";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const TAB_BAR_HEIGHT = 50;
@@ -35,6 +36,8 @@ interface VideoItem {
   };
   createdAt: string;
   commentCount?: number;
+  likeCount?: number;
+  isLikedByUser?: boolean;
 }
 
 // TikTok-style Video Component
@@ -49,10 +52,13 @@ const VideoItemComponent = ({
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
+  const [isLiked, setIsLiked] = useState(item.isLikedByUser || false);
   const [isFollowing, setIsFollowing] = useState(false);
   const [showCommentsModal, setShowCommentsModal] = useState(false);
   const [commentCount, setCommentCount] = useState(item.commentCount || 0);
+  const [likeCount, setLikeCount] = useState(item.likeCount || 0);
+  const [likePending, setLikePending] = useState(false);
+  const { user } = useAuth();
 
   const videoPlayer = useVideoPlayer(item.signedUrl || "", (player) => {
     player.loop = true;
@@ -81,6 +87,47 @@ const VideoItemComponent = ({
 
     fetchCommentCount();
   }, [item.id]);
+
+  // Fetch like data when component mounts
+  useEffect(() => {
+    const fetchLikeData = async () => {
+      if (!item.id) return;
+
+      try {
+        // Get like count
+        const { count, error: countError } = await supabase
+          .from("Like")
+          .select("*", { count: "exact", head: true })
+          .eq("video_id", item.id);
+
+        if (countError) {
+          console.error("Error fetching like count:", countError);
+        } else {
+          setLikeCount(count || 0);
+        }
+
+        // Check if current user liked this video
+        if (user) {
+          const { data: userLike, error: userLikeError } = await supabase
+            .from("Like")
+            .select("id")
+            .eq("video_id", item.id)
+            .eq("user_id", user.id)
+            .single();
+
+          if (userLikeError && userLikeError.code !== "PGRST116") {
+            console.error("Error checking user like:", userLikeError);
+          } else {
+            setIsLiked(!!userLike);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching like data:", error);
+      }
+    };
+
+    fetchLikeData();
+  }, [item.id, user]);
 
   const handleVideoPress = () => {
     if (!isScreenFocused) return;
@@ -119,9 +166,48 @@ const VideoItemComponent = ({
     );
   };
 
-  const handleLikePress = () => {
-    setIsLiked(!isLiked);
-    console.log("Like pressed for video:", item.id, "Liked:", !isLiked);
+  const handleLikePress = async () => {
+    if (!user || likePending) return;
+
+    try {
+      setLikePending(true);
+
+      if (isLiked) {
+        // Unlike the video
+        const { error } = await supabase
+          .from("Like")
+          .delete()
+          .eq("video_id", item.id)
+          .eq("user_id", user.id);
+
+        if (error) {
+          console.error("Error unliking video:", error);
+          return;
+        }
+
+        setIsLiked(false);
+        setLikeCount((prev) => Math.max(0, prev - 1));
+      } else {
+        // Like the video
+        const { error } = await supabase.from("Like").insert({
+          user_id: user.id,
+          video_id: item.id,
+          video_user_id: item.user_id,
+        });
+
+        if (error) {
+          console.error("Error liking video:", error);
+          return;
+        }
+
+        setIsLiked(true);
+        setLikeCount((prev) => prev + 1);
+      }
+    } catch (error) {
+      console.error("Error in handleLikePress:", error);
+    } finally {
+      setLikePending(false);
+    }
   };
 
   const handleCommentPress = () => {
@@ -276,14 +362,16 @@ const VideoItemComponent = ({
               shadowOpacity: 0.3,
               shadowRadius: 4,
               elevation: 5,
+              opacity: likePending ? 0.6 : 1,
             }}
+            disabled={likePending}
           >
             <AntDesign
               name="heart"
               size={30}
               color={isLiked ? "#FF0000" : "white"}
             />
-            <Text className="mt-1 text-xs text-white">125</Text>
+            <Text className="mt-1 text-xs text-white">{likeCount}</Text>
           </Pressable>
 
           {/* Comment Button - Filled */}
