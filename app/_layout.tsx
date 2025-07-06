@@ -37,6 +37,12 @@ export default function layout() {
             headerShown: false,
           }}
         />
+        <Stack.Screen
+          name="(sellerTabs)"
+          options={{
+            headerShown: false,
+          }}
+        />
       </Stack>
     </AuthProvider>
   );
