@@ -5,6 +5,7 @@ export interface PetFormData {
   gender: string;
   location: string;
   description: string;
+  type: string;
 }
 
 export interface MediaFile {

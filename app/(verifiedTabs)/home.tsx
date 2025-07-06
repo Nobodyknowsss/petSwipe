@@ -211,7 +211,6 @@ const VideoItemComponent = ({
   };
 
   const handleCommentPress = () => {
-    console.log("Comment pressed for video:", item.id);
     setShowCommentsModal(true);
   };
 
@@ -222,8 +221,6 @@ const VideoItemComponent = ({
   };
 
   const handleAdaptPress = () => {
-    console.log("ADAPT BUTTON CLICKED!");
-
     if (!item.user_id) {
       alert("No pet information available");
       return;
@@ -236,9 +233,7 @@ const VideoItemComponent = ({
     );
   };
 
-  const handleSharePress = () => {
-    console.log("Share pressed for video:", item.id);
-  };
+  const handleSharePress = () => {};
 
   if (!item.signedUrl) {
     return (
@@ -578,7 +573,6 @@ export default function Home() {
         };
       });
 
-      console.log("Videos with signed URLs:", videosWithSignedUrls);
       setVideos(videosWithSignedUrls);
     } catch (error) {
       console.error("Error in getSignedUrls:", error);

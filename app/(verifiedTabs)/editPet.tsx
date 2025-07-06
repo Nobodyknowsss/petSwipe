@@ -105,6 +105,76 @@ const GenderSelector = ({
   </View>
 );
 
+// Type Selector Component
+const TypeSelector = ({
+  selectedType,
+  onTypeSelect,
+  customType,
+  onCustomTypeChange,
+}: {
+  selectedType: string;
+  onTypeSelect: (type: string) => void;
+  customType: string;
+  onCustomTypeChange: (text: string) => void;
+}) => (
+  <View>
+    <Text className="mb-3 text-base font-semibold text-gray-700">
+      Pet Type *
+    </Text>
+    <View className="flex-row mb-3 space-x-2">
+      {["Dog", "Cat", "Other"].map((type) => (
+        <TouchableOpacity
+          key={type}
+          onPress={() => onTypeSelect(type)}
+          className={`flex-1 py-4 rounded-2xl border-2 ${
+            selectedType === type ? "border-2" : "border-2 border-gray-100"
+          }`}
+          style={{
+            backgroundColor:
+              selectedType === type ? "rgba(255, 114, 0, 0.1)" : "white",
+            borderColor: selectedType === type ? "#FF7200FF" : "#F3F4F6",
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.05,
+            shadowRadius: 8,
+            elevation: 2,
+          }}
+        >
+          <Text
+            className={`text-center font-semibold ${
+              selectedType === type ? "text-gray-800" : "text-gray-600"
+            }`}
+            style={{
+              color: selectedType === type ? "#FF7200FF" : "#6B7280",
+            }}
+          >
+            {type}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+
+    {/* Custom Type Input - Only show when "Other" is selected */}
+    {selectedType === "Other" && (
+      <TextInput
+        placeholder="Enter pet type (e.g., Rabbit, Bird, etc.)"
+        placeholderTextColor="#9CA3AF"
+        className="px-5 py-4 text-base text-gray-800 bg-white rounded-2xl border-2 border-gray-100"
+        style={{
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.05,
+          shadowRadius: 8,
+          elevation: 2,
+        }}
+        value={customType}
+        onChangeText={onCustomTypeChange}
+        autoCapitalize="words"
+      />
+    )}
+  </View>
+);
+
 // Submit Button Component
 const SubmitButton = ({
   onPress,
@@ -239,6 +309,7 @@ export default function EditPet() {
     gender: "",
     location: "",
     description: "",
+    type: "",
   });
   const [selectedImage, setSelectedImage] = useState<MediaFile | null>(null);
   const [selectedVideo, setSelectedVideo] = useState<MediaFile | null>(null);
@@ -247,6 +318,7 @@ export default function EditPet() {
   const [loadingPet, setLoadingPet] = useState(true);
   const [originalImageUrl, setOriginalImageUrl] = useState<string>("");
   const [originalVideoUrl, setOriginalVideoUrl] = useState<string>("");
+  const [customType, setCustomType] = useState("");
 
   // Video player for preview
   const videoPlayer = useVideoPlayer(selectedVideo?.uri || "", (player) => {
@@ -299,7 +371,14 @@ export default function EditPet() {
         gender: data.gender,
         location: data.location,
         description: data.description,
+        type: data.type || "",
       });
+
+      // Handle custom type if the type is not Dog or Cat
+      if (data.type && !["Dog", "Cat"].includes(data.type)) {
+        setFormData((prev) => ({ ...prev, type: "Other" }));
+        setCustomType(data.type);
+      }
 
       // Set original URLs for comparison
       setOriginalImageUrl(data.photoUrl);
@@ -544,6 +623,7 @@ export default function EditPet() {
       "gender",
       "location",
       "description",
+      "type",
     ];
     const missingFields = required.filter(
       (field) => !formData[field as keyof PetFormData].trim()
@@ -554,6 +634,12 @@ export default function EditPet() {
         "Missing Information",
         `Please fill in: ${missingFields.join(", ")}`
       );
+      return false;
+    }
+
+    // Additional validation for custom type
+    if (formData.type === "Other" && !customType.trim()) {
+      Alert.alert("Missing Information", "Please enter a pet type.");
       return false;
     }
 
@@ -583,15 +669,27 @@ export default function EditPet() {
       let photoUrl = originalImageUrl;
       let videoUrl = originalVideoUrl;
 
-      // Upload new image if changed
+      // Upload new images if selected
       if (selectedImage && selectedImage.uri !== originalImageUrl) {
         photoUrl = await uploadMediaToSupabase(selectedImage.uri, "image");
       }
 
-      // Upload new video if changed
       if (selectedVideo && selectedVideo.uri !== originalVideoUrl) {
         videoUrl = await uploadMediaToSupabase(selectedVideo.uri, "video");
       }
+
+      // Get current user
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        Alert.alert("Error", "You must be logged in to edit pets.");
+        return;
+      }
+
+      // Determine final type value
+      const finalType =
+        formData.type === "Other" ? customType.trim() : formData.type;
 
       // Update pet data in database
       const petData = {
@@ -601,6 +699,7 @@ export default function EditPet() {
         gender: formData.gender.trim(),
         location: formData.location.trim(),
         description: formData.description.trim(),
+        type: finalType,
         photoUrl,
         videoUrl,
       };
@@ -608,11 +707,12 @@ export default function EditPet() {
       const { error } = await supabase
         .from("Pet")
         .update(petData)
-        .eq("id", petId);
+        .eq("id", petId)
+        .eq("ownerId", user.id);
 
       if (error) throw error;
 
-      Alert.alert("Success!", "Your pet has been updated successfully.", [
+      Alert.alert("Success!", "Pet updated successfully.", [
         {
           text: "OK",
           onPress: () => {
@@ -637,6 +737,14 @@ export default function EditPet() {
 
   const updateFormData = (field: keyof PetFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleTypeSelect = (type: string) => {
+    updateFormData("type", type);
+    // Clear custom type when not selecting "Other"
+    if (type !== "Other") {
+      setCustomType("");
+    }
   };
 
   const handleBack = () => {
@@ -732,6 +840,14 @@ export default function EditPet() {
             value={formData.description}
             onChangeText={(value) => updateFormData("description", value)}
             multiline
+          />
+
+          {/* Type Selector */}
+          <TypeSelector
+            selectedType={formData.type}
+            onTypeSelect={handleTypeSelect}
+            customType={customType}
+            onCustomTypeChange={(text) => setCustomType(text)}
           />
         </View>
 
