@@ -505,7 +505,7 @@ export default function PetDetails() {
             </View>
           ) : (
             <Text className="text-lg font-bold text-center text-white">
-              Interested in {pet.name}?
+              Want to adopt {pet.name}?
             </Text>
           )}
         </TouchableOpacity>
