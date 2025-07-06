@@ -7,7 +7,7 @@ import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 import { supabase } from "../../utils/supabase";
 import { useAuth } from "../provider/AuthProvider";
 
-// Compact Dashboard Card Component
+// Enhanced Dashboard Card Component
 const DashboardCard = ({
   title,
   description,
@@ -25,22 +25,22 @@ const DashboardCard = ({
 }) => (
   <TouchableOpacity
     onPress={enabled ? onPress : undefined}
-    className={`p-3 mb-3 bg-white rounded-2xl ${enabled ? "":"opacity-60"}`}
+    className={`p-4 mb-3 bg-white rounded-2xl ${enabled ? "":"opacity-60"}`}
     style={{
       shadowColor: enabled ? color : "#000",
-      shadowOffset: { width: 0, height: 3 },
-      shadowOpacity: enabled ? 0.1 : 0.03,
-      shadowRadius: 8,
-      elevation: 4,
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: enabled ? 0.2 : 0.05,
+      shadowRadius: 12,
+      elevation: 8,
     }}
     disabled={!enabled}
   >
     <View className="items-center">
       <View
-        className="justify-center items-center mb-2 w-12 h-12 rounded-full"
+        className="justify-center items-center mb-3 w-14 h-14 rounded-full"
         style={{
           backgroundColor: enabled ? `${color}20` : "#F3F4F6",
-          borderWidth: 1,
+          borderWidth: 2,
           borderColor: enabled ? `${color}30` : "#E5E7EB",
         }}
       >
@@ -48,14 +48,14 @@ const DashboardCard = ({
       </View>
 
       <Text
-        className="mb-1 text-sm font-bold text-center"
+        className="mb-2 text-base font-bold text-center"
         style={{ color: enabled ? "#1F2937" : "#9CA3AF" }}
       >
         {title}
       </Text>
 
       <Text
-        className="px-1 text-xs leading-4 text-center"
+        className="px-2 text-sm leading-5 text-center"
         style={{ color: enabled ? "#6B7280" : "#9CA3AF" }}
       >
         {description}
@@ -63,7 +63,7 @@ const DashboardCard = ({
 
       {!enabled && (
         <View
-          className="px-2 py-1 mt-2 rounded-full"
+          className="px-3 py-1 mt-3 rounded-full"
           style={{ backgroundColor: "rgba(156, 163, 175, 0.2)" }}
         >
           <Text className="text-xs font-semibold text-gray-500">
@@ -74,7 +74,7 @@ const DashboardCard = ({
 
       {enabled && (
         <View
-          className="px-2 py-1 mt-2 rounded-full"
+          className="px-3 py-1 mt-3 rounded-full"
           style={{ backgroundColor: `${color}15` }}
         >
           <Text className="text-xs font-semibold" style={{ color: color }}>
@@ -86,7 +86,7 @@ const DashboardCard = ({
   </TouchableOpacity>
 );
 
-// Compact Stats Card Component
+// Enhanced Stats Card Component
 const StatsCard = ({
   value,
   label,
@@ -99,24 +99,24 @@ const StatsCard = ({
   loading?: boolean;
 }) => (
   <View
-    className="flex-1 p-3 mx-1 bg-white rounded-xl"
+    className="flex-1 p-4 mx-1 bg-white rounded-xl"
     style={{
       shadowColor: color,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.08,
-      shadowRadius: 6,
-      elevation: 2,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.15,
+      shadowRadius: 10,
+      elevation: 6,
     }}
   >
     <View className="items-center">
       {loading ? (
         <ActivityIndicator size="small" color={color} />
       ) : (
-        <Text className="mb-1 text-xl font-bold" style={{ color: color }}>
+        <Text className="mb-1 text-2xl font-bold" style={{ color: color }}>
           {value}
         </Text>
       )}
-      <Text className="text-xs font-medium text-center text-gray-600">
+      <Text className="text-xs font-semibold text-center text-gray-600">
         {label}
       </Text>
     </View>
@@ -145,7 +145,6 @@ export default function ManagePets() {
 
     try {
       setLoading(true);
-
       // Fetch total pets count
       const { count: petsCount, error: petsError } = await supabase
         .from("Pet")
@@ -161,7 +160,6 @@ export default function ManagePets() {
       if (petsError) {
         console.error("Error fetching pets count:", petsError);
       }
-
       if (postsError) {
         console.error("Error fetching posts count:", postsError);
       }
@@ -189,22 +187,27 @@ export default function ManagePets() {
     router.push("./createPost");
   };
 
+  const handleDeletePost = () => {
+    console.log("Delete post functionality - to be implemented");
+  };
+
   if (!user) {
     return (
-      <View
-        className="flex-1 justify-center items-center mb-28"
-        style={{ backgroundColor: "#3b3b3b" }}
-      >
+      <View className="flex-1 justify-center items-center mb-28 bg-white">
         <View
-          className="justify-center items-center mb-4 w-20 h-20 rounded-full"
-          style={{ backgroundColor: "#4A4A4A" }}
+          className="justify-center items-center mb-6 w-24 h-24 rounded-full"
+          style={{
+            backgroundColor: "#F0F8FF",
+            borderWidth: 2,
+            borderColor: "#E3F2FD",
+          }}
         >
-          <Text className="text-3xl">🔒</Text>
+          <Text className="text-4xl">🔒</Text>
         </View>
-        <Text className="mb-2 text-xl font-bold text-white">
+        <Text className="mb-3 text-2xl font-bold text-gray-900">
           Login Required
         </Text>
-        <Text className="text-center text-gray-300">
+        <Text className="px-8 text-center text-gray-600">
           Please log in to manage your pets
         </Text>
       </View>
@@ -212,58 +215,90 @@ export default function ManagePets() {
   }
 
   return (
-    <View className="flex-1 mb-28" style={{ backgroundColor: "#3b3b3b" }}>
-      {/* Compact Header */}
-      <View className="px-6 pt-8 pb-4">
+    <View className="flex-1 mb-28 bg-white">
+      {/* Enhanced Header */}
+      <View
+        className="px-6 pt-12 pb-6 bg-white"
+        style={{
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.1,
+          shadowRadius: 12,
+          elevation: 4,
+        }}
+      >
         <View className="items-center">
           <View
-            className="justify-center items-center mb-2 w-12 h-12 rounded-full"
-            style={{ backgroundColor: "rgba(255, 114, 0, 0.15)" }}
+            className="justify-center items-center mb-4 w-10 h-10 rounded-full"
+            style={{
+              backgroundColor: "rgba(255, 114, 0, 0.15)",
+              borderWidth: 2,
+              borderColor: "rgba(255, 114, 0, 0.3)",
+            }}
           >
             <Text className="text-xl">🏠</Text>
           </View>
-          <Text className="mb-1 text-xl font-bold text-center text-white">
+          <Text className="mb-2 text-xl font-bold text-center text-gray-900">
             Pet Management
           </Text>
-          <Text className="px-4 text-sm leading-4 text-center text-white">
+          <Text className="leading-5 text-center text-gray-600">
             Manage your beloved pets in one place
           </Text>
         </View>
       </View>
 
-      {/* Main Content - No Scroll */}
-      <View className="flex-1 px-6">
-        {/* Compact Action Cards */}
-        <View className="flex-1 mb-4">
-          <DashboardCard
-            title="My Pets"
-            description="View and manage all your pets"
-            icon="🐾"
-            onPress={handleNavigateToPets}
-            color="#FF7200FF"
-          />
+      {/* Main Content */}
+      <View className="flex-1 px-6 bg-slate-300">
+        {/* Action Cards - 2x2 Grid */}
+        <View className="flex-1 pt-6">
+          <View className="flex-row mb-3">
+            <View className="flex-1 mr-2">
+              <DashboardCard
+                title="My Pets"
+                description="View and manage all your pets"
+                icon="🐾"
+                onPress={handleNavigateToPets}
+                color="#FF7200FF"
+              />
+            </View>
+            <View className="flex-1 ml-2">
+              <DashboardCard
+                title="Add New Pet"
+                description="Register a new pet with details"
+                icon="➕"
+                onPress={handleNavigateToAddPet}
+                color="#10B981"
+              />
+            </View>
+          </View>
 
-          <DashboardCard
-            title="Add New Pet"
-            description="Register a new pet with details"
-            icon="➕"
-            onPress={handleNavigateToAddPet}
-            color="#10B981"
-          />
-
-          <DashboardCard
-            title="Create Post"
-            description="Share stories about your pets"
-            icon="📝"
-            onPress={handleNavigateToPost}
-            color="#8B5CF6"
-            enabled={true}
-          />
+          <View className="flex-row">
+            <View className="flex-1 mr-2">
+              <DashboardCard
+                title="Create Post"
+                description="Share stories about your pets"
+                icon="📝"
+                onPress={handleNavigateToPost}
+                color="#8B5CF6"
+                enabled={true}
+              />
+            </View>
+            <View className="flex-1 ml-2">
+              <DashboardCard
+                title="Delete Post"
+                description="Remove posts you no longer want"
+                icon="🗑️"
+                onPress={handleDeletePost}
+                color="#FF3B30"
+                enabled={true}
+              />
+            </View>
+          </View>
         </View>
 
-        {/* Compact Quick Stats */}
-        <View className="mb-4">
-          <Text className="mb-3 text-base font-bold text-white">
+        {/* Enhanced Quick Stats */}
+        <View className="mb-6">
+          <Text className="mb-4 text-lg font-bold text-gray-900">
             Quick Overview
           </Text>
           <View className="flex-row">

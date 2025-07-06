@@ -78,11 +78,11 @@ export default function ApplicationDetails() {
   const fetchApplicationDetails = async () => {
     try {
       setLoading(true);
-
       // Get current user to verify pet ownership
       const {
         data: { user },
       } = await supabase.auth.getUser();
+
       if (!user) {
         Alert.alert(
           "Error",
@@ -133,6 +133,7 @@ export default function ApplicationDetails() {
       const adoptionRequestData = requestData as unknown as AdoptionRequest & {
         pet: { ownerId: string };
       };
+
       if (adoptionRequestData.pet.ownerId !== user.id) {
         Alert.alert(
           "Error",
@@ -179,6 +180,7 @@ export default function ApplicationDetails() {
               const {
                 data: { user },
               } = await supabase.auth.getUser();
+
               if (!user) {
                 Alert.alert(
                   "Error",
@@ -245,6 +247,7 @@ export default function ApplicationDetails() {
               const {
                 data: { user },
               } = await supabase.auth.getUser();
+
               if (!user) {
                 Alert.alert(
                   "Error",
@@ -328,42 +331,50 @@ export default function ApplicationDetails() {
 
   if (loading) {
     return (
-      <SafeAreaView
-        className="flex-1 justify-center items-center"
-        style={{ backgroundColor: "#3b3b3b" }}
-      >
+      <SafeAreaView className="flex-1 justify-center items-center bg-white">
         <View
           className="justify-center items-center mb-4 w-20 h-20 rounded-full"
-          style={{ backgroundColor: "#4A4A4A" }}
+          style={{ backgroundColor: "#F0F8FF" }}
         >
-          <ActivityIndicator size="large" color="#FFFFFF" />
+          <ActivityIndicator size="large" color="#007AFF" />
         </View>
-        <Text className="text-lg font-semibold text-white">
+        <Text className="text-lg font-semibold text-gray-900">
           Loading application details...
         </Text>
-        <Text className="mt-1 text-sm text-gray-400">Please wait a moment</Text>
+        <Text className="mt-1 text-sm text-gray-500">Please wait a moment</Text>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1" style={{ backgroundColor: "#3b3b3b" }}>
+    <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 mb-28">
-        {/* Compact Header */}
-        <View className="px-6 pt-8 pb-4">
-          <View className="flex-row items-center mb-3">
+        {/* Enhanced Header */}
+        <View
+          className="px-6 pt-12 pb-6 bg-white"
+          style={{
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.05,
+            shadowRadius: 8,
+            elevation: 2,
+          }}
+        >
+          <View className="flex-row items-center mb-4">
             <TouchableOpacity
               onPress={() => router.push("/(verifiedTabs)/adopters")}
               className="justify-center items-center mr-4 w-10 h-10 rounded-full"
-              style={{ backgroundColor: "#4A4A4A" }}
+              style={{ backgroundColor: "rgba(0, 122, 255, 0.1)" }}
             >
-              <Text className="text-xl font-bold text-white">←</Text>
+              <Text className="text-xl font-bold" style={{ color: "#007AFF" }}>
+                ←
+              </Text>
             </TouchableOpacity>
             <View className="flex-1">
-              <Text className="text-xl font-bold text-white">
+              <Text className="text-2xl font-bold text-gray-900">
                 Application Details
               </Text>
-              <Text className="text-sm text-gray-300">
+              <Text className="text-base text-gray-600">
                 {adopterName} wants to adopt {petName}
               </Text>
             </View>
@@ -372,288 +383,309 @@ export default function ApplicationDetails() {
           {/* Status Badge */}
           <View className="flex-row justify-center">
             <View
-              className="px-4 py-2 rounded-full"
+              className="px-6 py-3 rounded-full"
               style={{
                 backgroundColor: getStatusColor(status as string),
+                shadowColor: getStatusColor(status as string),
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 3,
               }}
             >
-              <Text className="text-sm font-semibold text-white">
+              <Text className="text-base font-semibold text-white">
                 {getStatusText(status as string)}
               </Text>
             </View>
           </View>
         </View>
 
-        <ScrollView
-          className="flex-1 px-6"
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Pet Information */}
-          {adoptionRequest && (
-            <View
-              className="p-5 mb-4 bg-white rounded-3xl"
-              style={{
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 10,
-                elevation: 3,
-              }}
-            >
-              <Text className="mb-4 text-lg font-bold text-gray-900">
-                Pet Information
-              </Text>
-              <View className="flex-row">
-                <Image
-                  source={{
-                    uri:
-                      adoptionRequest.pet.photoUrl ||
-                      "https://via.placeholder.com/80x80/F3F4F6/9CA3AF?text=Pet",
+        {/* Content */}
+        <View className="flex-1 px-6" style={{ backgroundColor: "#F8F9FA" }}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingTop: 16 }}
+          >
+            {/* Pet Information */}
+            {adoptionRequest && (
+              <View
+                className="p-6 mb-4 bg-white rounded-3xl"
+                style={{
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 12,
+                  elevation: 6,
+                }}
+              >
+                <Text className="mb-4 text-xl font-bold text-gray-900">
+                  Pet Information
+                </Text>
+                <View className="flex-row">
+                  <Image
+                    source={{
+                      uri:
+                        adoptionRequest.pet.photoUrl ||
+                        "https://via.placeholder.com/80x80/F3F4F6/9CA3AF?text=Pet",
+                    }}
+                    className="mr-4 w-20 h-20 rounded-2xl"
+                    style={{ backgroundColor: "#F3F4F6" }}
+                  />
+                  <View className="flex-1">
+                    <Text className="mb-1 text-xl font-bold text-gray-900">
+                      {adoptionRequest.pet.name}
+                    </Text>
+                    <Text className="mb-1 text-base text-gray-600">
+                      {adoptionRequest.pet.breed}
+                    </Text>
+                    <Text className="mb-1 text-base text-gray-500">
+                      {adoptionRequest.pet.age} years •{" "}
+                      {adoptionRequest.pet.gender}
+                    </Text>
+                    <Text className="text-base text-gray-500">
+                      📍 {adoptionRequest.pet.location}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            )}
+
+            {/* Application Message */}
+            {adoptionRequest?.message && (
+              <View
+                className="p-6 mb-4 bg-white rounded-3xl"
+                style={{
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 12,
+                  elevation: 6,
+                }}
+              >
+                <Text className="mb-4 text-xl font-bold text-gray-900">
+                  Message from Adopter
+                </Text>
+                <View className="p-4 bg-gray-50 rounded-2xl">
+                  <Text className="mb-2 text-sm font-semibold text-gray-500">
+                    MESSAGE FROM ADOPTER:
+                  </Text>
+                  <Text className="text-base leading-6 text-gray-700">
+                    {adoptionRequest.message}
+                  </Text>
+                </View>
+              </View>
+            )}
+
+            {/* Adopter Profile */}
+            {adoptionProfile && (
+              <View
+                className="p-6 mb-4 bg-white rounded-3xl"
+                style={{
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 12,
+                  elevation: 6,
+                }}
+              >
+                <Text className="mb-4 text-xl font-bold text-gray-900">
+                  Adopter Profile
+                </Text>
+                <View className="space-y-4">
+                  {/* Basic Information */}
+                  <View>
+                    <Text className="mb-3 text-base font-semibold text-gray-500">
+                      BASIC INFORMATION
+                    </Text>
+                    <View className="p-4 bg-gray-50 rounded-2xl">
+                      <Text className="mb-2 text-lg font-semibold text-gray-900">
+                        {adoptionProfile.first_name} {adoptionProfile.last_name}
+                      </Text>
+                      <Text className="mb-1 text-base text-gray-600">
+                        📧 {adoptionProfile.email}
+                      </Text>
+                      <Text className="mb-1 text-base text-gray-600">
+                        📞 {adoptionProfile.phone}
+                      </Text>
+                      {adoptionProfile.address && (
+                        <Text className="mb-1 text-base text-gray-600">
+                          📍 {adoptionProfile.address}
+                        </Text>
+                      )}
+                      {adoptionProfile.birth_date && (
+                        <Text className="text-base text-gray-600">
+                          🎂{" "}
+                          {new Date(
+                            adoptionProfile.birth_date
+                          ).toLocaleDateString()}
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+
+                  {/* Work Information */}
+                  {(adoptionProfile.occupation ||
+                    adoptionProfile.company_name) && (
+                    <View>
+                      <Text className="mb-3 text-base font-semibold text-gray-500">
+                        WORK INFORMATION
+                      </Text>
+                      <View className="p-4 bg-gray-50 rounded-2xl">
+                        {adoptionProfile.occupation && (
+                          <Text className="mb-1 text-base text-gray-600">
+                            💼 {adoptionProfile.occupation}
+                          </Text>
+                        )}
+                        {adoptionProfile.company_name && (
+                          <Text className="text-base text-gray-600">
+                            🏢 {adoptionProfile.company_name}
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+                  )}
+
+                  {/* Emergency Contact */}
+                  {(adoptionProfile.alt_first_name ||
+                    adoptionProfile.alt_phone) && (
+                    <View>
+                      <Text className="mb-3 text-base font-semibold text-gray-500">
+                        EMERGENCY CONTACT
+                      </Text>
+                      <View className="p-4 bg-gray-50 rounded-2xl">
+                        {adoptionProfile.alt_first_name && (
+                          <Text className="mb-1 text-base text-gray-600">
+                            👤 {adoptionProfile.alt_first_name}{" "}
+                            {adoptionProfile.alt_last_name}
+                          </Text>
+                        )}
+                        {adoptionProfile.alt_relationship && (
+                          <Text className="mb-1 text-base text-gray-600">
+                            🤝 {adoptionProfile.alt_relationship}
+                          </Text>
+                        )}
+                        {adoptionProfile.alt_phone && (
+                          <Text className="mb-1 text-base text-gray-600">
+                            📞 {adoptionProfile.alt_phone}
+                          </Text>
+                        )}
+                        {adoptionProfile.alt_email && (
+                          <Text className="text-base text-gray-600">
+                            📧 {adoptionProfile.alt_email}
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+                  )}
+
+                  {/* Adoption Preferences */}
+                  <View>
+                    <Text className="mb-3 text-base font-semibold text-gray-500">
+                      ADOPTION PREFERENCES
+                    </Text>
+                    <View className="p-4 bg-gray-50 rounded-2xl">
+                      {adoptionProfile.preference && (
+                        <Text className="mb-1 text-base text-gray-600">
+                          ❤️ Pet Preference: {adoptionProfile.preference}
+                        </Text>
+                      )}
+                      <Text className="mb-1 text-base text-gray-600">
+                        🏠 Has adopted before:{" "}
+                        {adoptionProfile.has_adopted ? "Yes" : "No"}
+                      </Text>
+                      <Text className="text-base text-gray-600">
+                        🎯 Adopting specific pet:{" "}
+                        {adoptionProfile.adopt_specific_pet ? "Yes" : "No"}
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Pet Description */}
+                  {adoptionProfile.pet_description && (
+                    <View>
+                      <Text className="mb-3 text-base font-semibold text-gray-500">
+                        WHAT THEY RE LOOKING FOR
+                      </Text>
+                      <View className="p-4 bg-gray-50 rounded-2xl">
+                        <Text className="text-base leading-6 text-gray-700">
+                          {adoptionProfile.pet_description}
+                        </Text>
+                      </View>
+                    </View>
+                  )}
+                </View>
+              </View>
+            )}
+
+            {/* Application Timeline */}
+            {adoptionRequest && (
+              <View
+                className="p-6 mb-4 bg-white rounded-3xl"
+                style={{
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 12,
+                  elevation: 6,
+                }}
+              >
+                <Text className="mb-4 text-xl font-bold text-gray-900">
+                  Application Timeline
+                </Text>
+                <View className="p-4 bg-gray-50 rounded-2xl">
+                  <Text className="mb-1 text-base text-gray-600">
+                    📅 Applied:{" "}
+                    {new Date(adoptionRequest.createdAt).toLocaleDateString()}
+                  </Text>
+                  <Text className="text-base text-gray-600">
+                    🔄 Last Updated:{" "}
+                    {new Date(adoptionRequest.updatedAt).toLocaleDateString()}
+                  </Text>
+                </View>
+              </View>
+            )}
+
+            {/* Action Buttons */}
+            {status === "pending" && (
+              <View className="flex-row mb-6 space-x-4">
+                <TouchableOpacity
+                  className="flex-1 py-4 rounded-2xl"
+                  style={{
+                    backgroundColor: "#FF3B30",
+                    shadowColor: "#FF3B30",
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 12,
+                    elevation: 6,
                   }}
-                  className="mr-4 w-20 h-20 rounded-2xl"
-                  style={{ backgroundColor: "#F3F4F6" }}
-                />
-                <View className="flex-1">
-                  <Text className="mb-1 text-xl font-bold text-gray-900">
-                    {adoptionRequest.pet.name}
+                  onPress={handleRejectRequest}
+                >
+                  <Text className="text-lg font-semibold text-center text-white">
+                    Reject Application
                   </Text>
-                  <Text className="mb-1 text-gray-600">
-                    {adoptionRequest.pet.breed}
+                </TouchableOpacity>
+                <TouchableOpacity
+                  className="flex-1 py-4 rounded-2xl"
+                  style={{
+                    backgroundColor: "#34C759",
+                    shadowColor: "#34C759",
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 12,
+                    elevation: 6,
+                  }}
+                  onPress={handleAcceptRequest}
+                >
+                  <Text className="text-lg font-semibold text-center text-white">
+                    Accept Application
                   </Text>
-                  <Text className="mb-1 text-sm text-gray-500">
-                    {adoptionRequest.pet.age} years •{" "}
-                    {adoptionRequest.pet.gender}
-                  </Text>
-                  <Text className="text-sm text-gray-500">
-                    📍 {adoptionRequest.pet.location}
-                  </Text>
-                </View>
+                </TouchableOpacity>
               </View>
-            </View>
-          )}
+            )}
 
-          {/* Application Message */}
-          {adoptionRequest?.message && (
-            <View
-              className="p-5 mb-4 bg-white rounded-3xl"
-              style={{
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 10,
-                elevation: 3,
-              }}
-            >
-              <Text className="mb-3 text-lg font-bold text-gray-900">
-                Message from Adopter
-              </Text>
-              <View className="p-3 bg-gray-50 rounded-2xl">
-                <Text className="mb-1 text-xs font-semibold text-gray-500">
-                  MESSAGE FROM ADOPTER:
-                </Text>
-                <Text className="text-sm text-gray-700">
-                  {adoptionRequest.message}
-                </Text>
-              </View>
-            </View>
-          )}
-
-          {/* Adopter Profile */}
-          {adoptionProfile && (
-            <View
-              className="p-5 mb-4 bg-white rounded-3xl"
-              style={{
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 10,
-                elevation: 3,
-              }}
-            >
-              <Text className="mb-4 text-lg font-bold text-gray-900">
-                Adopter Profile
-              </Text>
-
-              <View className="space-y-3">
-                {/* Basic Information */}
-                <View>
-                  <Text className="mb-2 text-sm font-semibold text-gray-500">
-                    BASIC INFORMATION
-                  </Text>
-                  <View className="p-4 bg-gray-50 rounded-2xl">
-                    <Text className="mb-2 text-base font-semibold text-gray-900">
-                      {adoptionProfile.first_name} {adoptionProfile.last_name}
-                    </Text>
-                    <Text className="mb-1 text-sm text-gray-600">
-                      📧 {adoptionProfile.email}
-                    </Text>
-                    <Text className="mb-1 text-sm text-gray-600">
-                      📞 {adoptionProfile.phone}
-                    </Text>
-                    {adoptionProfile.address && (
-                      <Text className="mb-1 text-sm text-gray-600">
-                        📍 {adoptionProfile.address}
-                      </Text>
-                    )}
-                    {adoptionProfile.birth_date && (
-                      <Text className="text-sm text-gray-600">
-                        🎂{" "}
-                        {new Date(
-                          adoptionProfile.birth_date
-                        ).toLocaleDateString()}
-                      </Text>
-                    )}
-                  </View>
-                </View>
-
-                {/* Work Information */}
-                {(adoptionProfile.occupation ||
-                  adoptionProfile.company_name) && (
-                  <View>
-                    <Text className="mb-2 text-sm font-semibold text-gray-500">
-                      WORK INFORMATION
-                    </Text>
-                    <View className="p-4 bg-gray-50 rounded-2xl">
-                      {adoptionProfile.occupation && (
-                        <Text className="mb-1 text-sm text-gray-600">
-                          💼 {adoptionProfile.occupation}
-                        </Text>
-                      )}
-                      {adoptionProfile.company_name && (
-                        <Text className="text-sm text-gray-600">
-                          🏢 {adoptionProfile.company_name}
-                        </Text>
-                      )}
-                    </View>
-                  </View>
-                )}
-
-                {/* Emergency Contact */}
-                {(adoptionProfile.alt_first_name ||
-                  adoptionProfile.alt_phone) && (
-                  <View>
-                    <Text className="mb-2 text-sm font-semibold text-gray-500">
-                      EMERGENCY CONTACT
-                    </Text>
-                    <View className="p-4 bg-gray-50 rounded-2xl">
-                      {adoptionProfile.alt_first_name && (
-                        <Text className="mb-1 text-sm text-gray-600">
-                          👤 {adoptionProfile.alt_first_name}{" "}
-                          {adoptionProfile.alt_last_name}
-                        </Text>
-                      )}
-                      {adoptionProfile.alt_relationship && (
-                        <Text className="mb-1 text-sm text-gray-600">
-                          🤝 {adoptionProfile.alt_relationship}
-                        </Text>
-                      )}
-                      {adoptionProfile.alt_phone && (
-                        <Text className="mb-1 text-sm text-gray-600">
-                          📞 {adoptionProfile.alt_phone}
-                        </Text>
-                      )}
-                      {adoptionProfile.alt_email && (
-                        <Text className="text-sm text-gray-600">
-                          📧 {adoptionProfile.alt_email}
-                        </Text>
-                      )}
-                    </View>
-                  </View>
-                )}
-
-                {/* Adoption Preferences */}
-                <View>
-                  <Text className="mb-2 text-sm font-semibold text-gray-500">
-                    ADOPTION PREFERENCES
-                  </Text>
-                  <View className="p-4 bg-gray-50 rounded-2xl">
-                    {adoptionProfile.preference && (
-                      <Text className="mb-1 text-sm text-gray-600">
-                        ❤️ Pet Preference: {adoptionProfile.preference}
-                      </Text>
-                    )}
-                    <Text className="mb-1 text-sm text-gray-600">
-                      🏠 Has adopted before:{" "}
-                      {adoptionProfile.has_adopted ? "Yes" : "No"}
-                    </Text>
-                    <Text className="text-sm text-gray-600">
-                      🎯 Adopting specific pet:{" "}
-                      {adoptionProfile.adopt_specific_pet ? "Yes" : "No"}
-                    </Text>
-                  </View>
-                </View>
-
-                {/* Pet Description */}
-                {adoptionProfile.pet_description && (
-                  <View>
-                    <Text className="mb-2 text-sm font-semibold text-gray-500">
-                      WHAT THEY&apos;RE LOOKING FOR
-                    </Text>
-                    <View className="p-4 bg-gray-50 rounded-2xl">
-                      <Text className="text-sm text-gray-700">
-                        {adoptionProfile.pet_description}
-                      </Text>
-                    </View>
-                  </View>
-                )}
-              </View>
-            </View>
-          )}
-
-          {/* Application Timeline */}
-          {adoptionRequest && (
-            <View
-              className="p-5 mb-4 bg-white rounded-3xl"
-              style={{
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 10,
-                elevation: 3,
-              }}
-            >
-              <Text className="mb-3 text-lg font-bold text-gray-900">
-                Application Timeline
-              </Text>
-              <View className="p-4 bg-gray-50 rounded-2xl">
-                <Text className="mb-1 text-sm text-gray-600">
-                  📅 Applied:{" "}
-                  {new Date(adoptionRequest.createdAt).toLocaleDateString()}
-                </Text>
-                <Text className="text-sm text-gray-600">
-                  🔄 Last Updated:{" "}
-                  {new Date(adoptionRequest.updatedAt).toLocaleDateString()}
-                </Text>
-              </View>
-            </View>
-          )}
-
-          {/* Action Buttons */}
-          {status === "pending" && (
-            <View className="flex-row gap-4 mb-6 space-x-4">
-              <TouchableOpacity
-                className="flex-1 py-4 rounded-2xl"
-                style={{ backgroundColor: "#FF3B30" }}
-                onPress={handleRejectRequest}
-              >
-                <Text className="text-lg font-semibold text-center text-white">
-                  Reject Application
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                className="flex-1 py-4 rounded-2xl"
-                style={{ backgroundColor: "#34C759" }}
-                onPress={handleAcceptRequest}
-              >
-                <Text className="text-lg font-semibold text-center text-white">
-                  Accept Application
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
-          <View className="h-8" />
-        </ScrollView>
+            <View className="h-8" />
+          </ScrollView>
+        </View>
       </View>
     </SafeAreaView>
   );
