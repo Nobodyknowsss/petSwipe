@@ -40,6 +40,14 @@ export default function layout() {
           headerShown: false,
         }}
       />
+      <Tabs.Screen
+        name="checkoutPage"
+        options={{
+          title: "Checkout",
+          headerShown: false,
+          href: null, // Hide from tab bar
+        }}
+      />
     </Tabs>
   );
 }

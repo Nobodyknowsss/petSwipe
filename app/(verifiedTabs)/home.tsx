@@ -403,7 +403,7 @@ const VideoItemComponent = ({
             >
               <Text className="text-lg font-bold text-black">A</Text>
             </View>
-            <Text className="mt-1 text-xs text-white">Adapt</Text>
+            <Text className="mt-1 text-xs text-white">Adopt</Text>
           </Pressable>
 
           {/* Share Button */}
