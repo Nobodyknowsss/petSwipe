@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter } from "expo-router";
 import { useState } from "react"
 import { View, Text, ScrollView, TextInput, TouchableOpacity, Image, Modal, Alert, SafeAreaView } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
@@ -142,6 +143,7 @@ interface CartItem extends Product {
 }
 
 export default function BuyerProductCatalogScreen() {
+  const route = useRouter();
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("Food")
   const [cart, setCart] = useState<CartItem[]>([])
@@ -475,7 +477,9 @@ export default function BuyerProductCatalogScreen() {
                   <Text className="text-xl font-bold text-gray-900">Total</Text>
                   <Text className="text-2xl font-bold text-orange-500">${cartTotal.toFixed(2)}</Text>
                 </View>
-                <TouchableOpacity className="w-full bg-orange-500 py-4 rounded-xl">
+                <TouchableOpacity className="w-full bg-orange-500 py-4 rounded-xl"
+                  onPress={() => route.push("/(userTabs)/checkoutPage")}
+                >
                   <Text className="text-white font-bold text-center text-lg">Checkout</Text>
                 </TouchableOpacity>
               </View>
