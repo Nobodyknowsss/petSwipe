@@ -375,7 +375,6 @@ export default function PetDetails() {
               { text: "Cancel", style: "cancel" },
               {
                 text: "Yes",
-                onPress: () => console.log("Contact pressed for", pet.name),
               },
             ]);
           }}

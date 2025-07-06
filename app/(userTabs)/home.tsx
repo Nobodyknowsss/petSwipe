@@ -12,11 +12,12 @@ import {
   Dimensions,
   FlatList,
   Pressable,
-  SafeAreaView,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { CommentsModal, getCommentCount } from "../../components/comments";
+import VideoSearch from "../../components/VideoSearch";
 import { supabase } from "../../utils/supabase";
 import { useAuth } from "../provider/AuthProvider";
 
@@ -30,7 +31,6 @@ interface VideoItem {
   signedUrl?: string;
   description: string;
   user_id: string;
-  pet_id?: string;
   User: {
     username: string;
   };
@@ -38,6 +38,7 @@ interface VideoItem {
   commentCount?: number;
   likeCount?: number;
   isLikedByUser?: boolean;
+  pet_type?: string | null;
 }
 
 // TikTok-style Video Component
@@ -472,8 +473,13 @@ const VideoItemComponent = ({
 export default function Home() {
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isScreenFocused, setIsScreenFocused] = useState(true);
+  const [showSearchModal, setShowSearchModal] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<"For You" | "Dog" | "Cat">(
+    "For You"
+  );
   const flatListRef = useRef<FlatList>(null);
 
   // Handle screen focus/blur to pause videos when navigating away
@@ -495,31 +501,43 @@ export default function Home() {
 
   const getVideos = async () => {
     try {
+      console.log("🔄 Starting getVideos...");
       setLoading(true);
+
       const { data, error } = await supabase
         .from("Video")
         .select("id,uri,user_id,description,createdAt,User(username)")
         .order("createdAt", { ascending: false });
 
+      console.log("📹 Video query result:", { videoData: data?.length, error });
+
       if (error) {
-        console.error("Error fetching videos:", error);
+        console.error("❌ Error fetching videos:", error);
+        setVideos([]);
+        setLoading(false);
         return;
       }
 
       if (data && data.length > 0) {
+        console.log("✅ Videos found:", data.length);
         await getSignedUrls(data);
       } else {
+        console.log("📭 No videos found");
         setVideos([]);
       }
     } catch (error) {
-      console.error("Error in getVideos:", error);
+      console.error("💥 Error in getVideos:", error);
+      setVideos([]);
     } finally {
+      console.log("🏁 getVideos completed, setting loading to false");
       setLoading(false);
     }
   };
 
   const getSignedUrls = async (videoData: any[]) => {
     try {
+      console.log("🔗 Starting getSignedUrls for", videoData.length, "videos");
+
       // Extract file paths from full URLs
       const filePaths = videoData
         .map((video) => {
@@ -535,7 +553,7 @@ export default function Home() {
         .filter((item) => item.path); // Remove any empty/undefined paths
 
       if (filePaths.length === 0) {
-        console.log("No valid file paths found");
+        console.log("📋 No valid file paths found, using original URIs");
         setVideos(videoData);
         return;
       }
@@ -549,7 +567,7 @@ export default function Home() {
         );
 
       if (error) {
-        console.error("Error creating signed URLs:", error);
+        console.error("❌ Error creating signed URLs:", error);
         setVideos(videoData);
         return;
       }
@@ -575,10 +593,30 @@ export default function Home() {
         };
       });
 
+      console.log("✅ Videos with signed URLs:", videosWithSignedUrls.length);
       setVideos(videosWithSignedUrls);
+      console.log("🏁 getSignedUrls completed");
     } catch (error) {
-      console.error("Error in getSignedUrls:", error);
-      setVideos(videoData);
+      console.error("💥 Error in getSignedUrls:", error);
+      // Fallback: use original URIs
+      const videosWithFallback = videoData.map((video) => ({
+        ...video,
+        signedUrl: video.uri,
+      }));
+      setVideos(videosWithFallback);
+    }
+  };
+
+  const handleRefresh = async () => {
+    console.log("🔄 Refresh started");
+    setRefreshing(true);
+    try {
+      await getVideos();
+    } catch (error) {
+      console.error("❌ Error refreshing videos:", error);
+    } finally {
+      console.log("🏁 Refresh completed");
+      setRefreshing(false);
     }
   };
 
@@ -612,45 +650,140 @@ export default function Home() {
     );
   };
 
-  if (loading) {
-    return (
-      <SafeAreaView className="flex-1 justify-center items-center bg-black">
-        <ActivityIndicator size="large" color="#FF7200FF" />
-        <Text className="mt-4 text-lg text-white">Loading videos...</Text>
-      </SafeAreaView>
-    );
-  }
+  const handleVideoSelect = (video: VideoItem, index: number) => {
+    setCurrentIndex(index);
+    flatListRef.current?.scrollToIndex({ index, animated: true });
+  };
 
-  if (videos.length === 0) {
-    return (
-      <SafeAreaView className="flex-1 justify-center items-center bg-black">
-        <Text className="mb-4 text-xl text-white">No videos found</Text>
-        <Text className="px-8 text-center text-gray-400">
-          Create some posts with videos to see them here!
-        </Text>
-      </SafeAreaView>
-    );
-  }
+  const handleSearchPress = () => {
+    setShowSearchModal(true);
+  };
+
+  const handleSearchClose = () => {
+    setShowSearchModal(false);
+  };
+
+  const handleFilterPress = (filter: "For You" | "Dog" | "Cat") => {
+    console.log(`🎛️ ${filter} filter pressed - no filtering applied`);
+    setActiveFilter(filter);
+  };
 
   return (
     <View className="flex-1 bg-black">
-      <FlatList
-        ref={flatListRef}
-        data={videos}
-        renderItem={renderVideoItem}
-        keyExtractor={(item) => item.id}
-        pagingEnabled
-        showsVerticalScrollIndicator={false}
-        snapToInterval={screenHeight}
-        snapToAlignment="start"
-        decelerationRate="fast"
-        onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={viewabilityConfig}
-        getItemLayout={(data, index) => ({
-          length: screenHeight,
-          offset: screenHeight * index,
-          index,
-        })}
+      {/* Top Bar */}
+      <View className="absolute right-0 left-0 top-12 z-20 flex-row justify-between items-center px-6 py-3">
+        {/* Left Side - Filter Buttons */}
+        <View className="flex-row gap-2 space-x-2">
+          {(["Dog", "Cat", "For You"] as const).map((filter) => (
+            <TouchableOpacity
+              key={filter}
+              onPress={() => handleFilterPress(filter)}
+              className={`px-4 py-2 rounded-full ${
+                activeFilter === filter
+                  ? "bg-white"
+                  : "bg-black/50 border border-white/30"
+              }`}
+            >
+              <Text
+                className={`text-sm font-semibold ${
+                  activeFilter === filter ? "text-black" : "text-white"
+                }`}
+              >
+                {filter}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Right Side Buttons */}
+        <View className="flex-row gap-2 items-center space-x-3">
+          {/* Refresh Button */}
+          <TouchableOpacity
+            onPress={handleRefresh}
+            disabled={refreshing}
+            className="justify-center items-center w-10 h-10 rounded-full border border-gray-600 bg-black/70"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.3,
+              shadowRadius: 4,
+              elevation: 5,
+              opacity: refreshing ? 0.6 : 1,
+            }}
+          >
+            <AntDesign
+              name="reload1"
+              size={20}
+              color="white"
+              style={{
+                transform: [{ rotate: refreshing ? "180deg" : "0deg" }],
+              }}
+            />
+          </TouchableOpacity>
+
+          {/* Search Button */}
+          <TouchableOpacity
+            onPress={handleSearchPress}
+            className="justify-center items-center w-28 h-10 rounded-full border border-gray-600 bg-black/70"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.3,
+              shadowRadius: 4,
+              elevation: 5,
+            }}
+          >
+            <AntDesign name="search1" size={20} color="#FF7200FF" />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Content - same as before */}
+      {loading ? (
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#FF7200FF" />
+          <Text className="mt-4 text-lg text-white">Loading videos...</Text>
+        </View>
+      ) : videos.length === 0 ? (
+        <View className="flex-1 justify-center items-center">
+          <Text className="mb-4 text-xl text-white">No videos found</Text>
+          <Text className="px-8 text-center text-gray-400">
+            Create some posts with videos to see them here!
+          </Text>
+          <TouchableOpacity
+            onPress={handleRefresh}
+            className="px-6 py-3 mt-4 bg-orange-500 rounded-full"
+          >
+            <Text className="font-semibold text-white">Refresh</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <FlatList
+          ref={flatListRef}
+          data={videos}
+          renderItem={renderVideoItem}
+          keyExtractor={(item) => item.id}
+          pagingEnabled
+          showsVerticalScrollIndicator={false}
+          snapToInterval={screenHeight}
+          snapToAlignment="start"
+          decelerationRate="fast"
+          onViewableItemsChanged={onViewableItemsChanged}
+          viewabilityConfig={viewabilityConfig}
+          getItemLayout={(data, index) => ({
+            length: screenHeight,
+            offset: screenHeight * index,
+            index,
+          })}
+        />
+      )}
+
+      {/* Search Modal */}
+      <VideoSearch
+        visible={showSearchModal}
+        onClose={handleSearchClose}
+        videos={videos}
+        onVideoSelect={handleVideoSelect}
       />
     </View>
   );

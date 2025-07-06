@@ -8,6 +8,7 @@ import {
   Alert,
   Image,
   RefreshControl,
+  SafeAreaView,
   ScrollView,
   Text,
   TextInput,
@@ -255,13 +256,13 @@ export default function AdoptersPage() {
 
   const AdopterCard = ({ request }: { request: AdoptionRequest }) => (
     <View
-      className="overflow-hidden mb-4 bg-white rounded-3xl"
+      className="overflow-hidden mb-4 rounded-3xl bg-slate-100"
       style={{
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 10,
-        elevation: 3,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+        elevation: 6,
       }}
     >
       <View className="p-5">
@@ -325,7 +326,14 @@ export default function AdoptersPage() {
         <View className="mt-4">
           <TouchableOpacity
             className="py-3 rounded-2xl"
-            style={{ backgroundColor: "#007AFF" }}
+            style={{
+              backgroundColor: "#007AFF",
+              shadowColor: "#007AFF",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.2,
+              shadowRadius: 8,
+              elevation: 3,
+            }}
             onPress={() => handleViewApplication(request)}
           >
             <Text className="font-semibold text-center text-white">
@@ -336,10 +344,17 @@ export default function AdoptersPage() {
 
         {/* Action Buttons */}
         {request.status === "pending" && (
-          <View className="flex-row gap-4 mt-3 space-x-3">
+          <View className="flex-row mt-3 space-x-3">
             <TouchableOpacity
               className="flex-1 py-3 rounded-2xl"
-              style={{ backgroundColor: "#FF3B30" }}
+              style={{
+                backgroundColor: "#FF3B30",
+                shadowColor: "#FF3B30",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.2,
+                shadowRadius: 8,
+                elevation: 3,
+              }}
               onPress={() =>
                 handleRejectRequest(
                   request.id,
@@ -354,7 +369,14 @@ export default function AdoptersPage() {
             </TouchableOpacity>
             <TouchableOpacity
               className="flex-1 py-3 rounded-2xl"
-              style={{ backgroundColor: "#34C759" }}
+              style={{
+                backgroundColor: "#34C759",
+                shadowColor: "#34C759",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.2,
+                shadowRadius: 8,
+                elevation: 3,
+              }}
               onPress={() =>
                 handleAcceptRequest(
                   request.id,
@@ -376,15 +398,19 @@ export default function AdoptersPage() {
   const EmptyState = () => (
     <View className="justify-center items-center py-20">
       <View
-        className="justify-center items-center mb-6 w-32 h-32 rounded-full"
-        style={{ backgroundColor: "#4A4A4A" }}
+        className="justify-center items-center mb-6 w-24 h-24 rounded-full"
+        style={{
+          backgroundColor: "#F0F8FF",
+          borderWidth: 2,
+          borderColor: "#E3F2FD",
+        }}
       >
-        <Text className="text-5xl">👥</Text>
+        <Text className="text-4xl">👥</Text>
       </View>
-      <Text className="mb-3 text-2xl font-bold text-white">
+      <Text className="mb-3 text-2xl font-bold text-gray-900">
         No adoption requests
       </Text>
-      <Text className="px-8 leading-6 text-center text-gray-300">
+      <Text className="px-8 leading-6 text-center text-gray-600">
         {searchQuery
           ? "No requests match your search terms"
           : "No one has applied to adopt your pets yet"}
@@ -394,75 +420,103 @@ export default function AdoptersPage() {
 
   if (!user) {
     return (
-      <View
-        className="flex-1 justify-center items-center"
-        style={{ backgroundColor: "#3b3b3b" }}
-      >
+      <SafeAreaView className="flex-1 justify-center items-center bg-white">
         <View
-          className="justify-center items-center mb-6 w-32 h-32 rounded-full"
-          style={{ backgroundColor: "#4A4A4A" }}
+          className="justify-center items-center mb-6 w-24 h-24 rounded-full"
+          style={{
+            backgroundColor: "#F0F8FF",
+            borderWidth: 2,
+            borderColor: "#E3F2FD",
+          }}
         >
-          <Text className="text-5xl">🔒</Text>
+          <Text className="text-4xl">🔒</Text>
         </View>
-        <Text className="mb-3 text-2xl font-bold text-white">
+        <Text className="mb-3 text-2xl font-bold text-gray-900">
           Login Required
         </Text>
-        <Text className="px-8 leading-6 text-center text-gray-300">
+        <Text className="px-8 leading-6 text-center text-gray-600">
           Please log in to view adoption requests
         </Text>
         <TouchableOpacity
           className="px-8 py-4 mt-6 rounded-2xl"
-          style={{ backgroundColor: "#007AFF" }}
+          style={{
+            backgroundColor: "#007AFF",
+            shadowColor: "#007AFF",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 12,
+            elevation: 6,
+          }}
           onPress={() => router.push("/(auth)/login")}
         >
           <Text className="text-lg font-semibold text-white">Sign In</Text>
         </TouchableOpacity>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View className="flex-1 mb-28" style={{ backgroundColor: "#3b3b3b" }}>
-      {/* Header */}
-      <View className="px-6 pt-12 pb-6">
-        <Text className="mb-2 text-2xl font-bold text-center text-white">
-          Adoption Requests
-        </Text>
-        <Text className="mb-6 text-center text-gray-300">
-          Review applications for your pets
-        </Text>
+    <View className="flex-1 mb-24 bg-white">
+      {/* Enhanced Header */}
+      <View
+        className="px-6 pt-12 pb-6 bg-white"
+        style={{
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.05,
+          shadowRadius: 8,
+          elevation: 2,
+        }}
+      >
+        <View className="items-center mb-4">
+          <View
+            className="justify-center items-center mb-4 w-8 h-8 rounded-full"
+            style={{
+              backgroundColor: "rgba(0, 122, 255, 0.1)",
+              borderWidth: 2,
+              borderColor: "rgba(0, 122, 255, 0.2)",
+            }}
+          >
+            <Text className="text-xl">📋</Text>
+          </View>
+          <Text className="mb-2 text-base font-bold text-center text-gray-900">
+            Adoption Requests
+          </Text>
+          <Text className="text-sm leading-5 text-center text-gray-600">
+            Review applications for your pets
+          </Text>
+        </View>
 
-        {/* Search Bar */}
+        {/* Enhanced Search Bar */}
         <View className="relative">
           <TextInput
             placeholder="Search by adopter name, pet name, or breed..."
             placeholderTextColor="#9CA3AF"
-            className="px-5 py-4 pr-12 w-full text-base text-gray-800 bg-white rounded-2xl"
+            className="px-4 py-3 pr-12 w-full text-base text-gray-900 bg-white rounded-2xl border-2 border-gray-100"
             style={{
-              backgroundColor: "#FFFFFF",
               shadowColor: "#000",
               shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.1,
+              shadowOpacity: 0.05,
               shadowRadius: 8,
-              elevation: 3,
+              elevation: 2,
             }}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
           <View className="absolute top-4 right-4">
-            <Text className="text-lg text-gray-500">🔍</Text>
+            <Text className="text-lg text-gray-400">🔍</Text>
           </View>
         </View>
 
         {/* Results Counter */}
         {searchQuery && (
-          <Text className="mt-3 text-sm text-gray-300">
+          <Text className="mt-3 text-sm text-gray-600">
             {filteredRequests.length} request
             {filteredRequests.length !== 1 ? "s" : ""} found
           </Text>
         )}
 
-        {/* Quick Stats */}
+        {/* Enhanced Quick Stats */}
         {adoptionRequests.length > 0 && (
           <View className="flex-row gap-4 mt-4 space-x-3">
             <View
@@ -470,10 +524,10 @@ export default function AdoptersPage() {
               style={{
                 backgroundColor: "#FF9500",
                 shadowColor: "#FF9500",
-                shadowOffset: { width: 0, height: 2 },
+                shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.3,
-                shadowRadius: 6,
-                elevation: 2,
+                shadowRadius: 8,
+                elevation: 4,
               }}
             >
               <Text className="text-2xl font-bold text-center text-white">
@@ -488,10 +542,10 @@ export default function AdoptersPage() {
               style={{
                 backgroundColor: "#34C759",
                 shadowColor: "#34C759",
-                shadowOffset: { width: 0, height: 2 },
+                shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.3,
-                shadowRadius: 6,
-                elevation: 2,
+                shadowRadius: 8,
+                elevation: 4,
               }}
             >
               <Text className="text-2xl font-bold text-center text-white">
@@ -506,10 +560,10 @@ export default function AdoptersPage() {
               style={{
                 backgroundColor: "#007AFF",
                 shadowColor: "#007AFF",
-                shadowOffset: { width: 0, height: 2 },
+                shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.3,
-                shadowRadius: 6,
-                elevation: 2,
+                shadowRadius: 8,
+                elevation: 4,
               }}
             >
               <Text className="text-2xl font-bold text-center text-white">
@@ -523,45 +577,47 @@ export default function AdoptersPage() {
         )}
       </View>
 
-      {/* Adoption Requests List */}
-      <ScrollView
-        className="flex-1 px-6"
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor="#FFFFFF"
-            colors={["#FFFFFF"]}
-          />
-        }
-      >
-        {loading ? (
-          <View className="justify-center items-center py-20">
-            <View
-              className="justify-center items-center mb-4 w-20 h-20 rounded-full"
-              style={{ backgroundColor: "#4A4A4A" }}
-            >
-              <ActivityIndicator size="large" color="#FFFFFF" />
+      {/* Content Area */}
+      <View className="flex-1 px-6" style={{ backgroundColor: "#F8F9FA" }}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#007AFF"
+              colors={["#007AFF"]}
+            />
+          }
+          contentContainerStyle={{ paddingTop: 16 }}
+        >
+          {loading ? (
+            <View className="justify-center items-center py-20">
+              <View
+                className="justify-center items-center mb-4 w-20 h-20 rounded-full"
+                style={{ backgroundColor: "#F0F8FF" }}
+              >
+                <ActivityIndicator size="large" color="#007AFF" />
+              </View>
+              <Text className="text-lg font-semibold text-gray-900">
+                Loading requests...
+              </Text>
+              <Text className="mt-1 text-sm text-gray-500">
+                Please wait a moment
+              </Text>
             </View>
-            <Text className="text-lg font-semibold text-white">
-              Loading requests...
-            </Text>
-            <Text className="mt-1 text-sm text-gray-400">
-              Please wait a moment
-            </Text>
-          </View>
-        ) : filteredRequests.length > 0 ? (
-          <>
-            {filteredRequests.map((request) => (
-              <AdopterCard key={request.id} request={request} />
-            ))}
-            <View className="h-20" />
-          </>
-        ) : (
-          <EmptyState />
-        )}
-      </ScrollView>
+          ) : filteredRequests.length > 0 ? (
+            <>
+              {filteredRequests.map((request) => (
+                <AdopterCard key={request.id} request={request} />
+              ))}
+              <View className="h-20" />
+            </>
+          ) : (
+            <EmptyState />
+          )}
+        </ScrollView>
+      </View>
     </View>
   );
 }
