@@ -108,6 +108,76 @@ const GenderSelector = ({
   </View>
 );
 
+// Type Selector Component
+const TypeSelector = ({
+  selectedType,
+  onTypeSelect,
+  customType,
+  onCustomTypeChange,
+}: {
+  selectedType: string;
+  onTypeSelect: (type: string) => void;
+  customType: string;
+  onCustomTypeChange: (text: string) => void;
+}) => (
+  <View>
+    <Text className="mb-3 text-base font-semibold text-gray-700">
+      Pet Type *
+    </Text>
+    <View className="flex-row mb-3 space-x-2">
+      {["Dog", "Cat", "Other"].map((type) => (
+        <TouchableOpacity
+          key={type}
+          onPress={() => onTypeSelect(type)}
+          className={`flex-1 py-4 rounded-2xl border-2 ${
+            selectedType === type ? "border-2" : "border-2 border-gray-100"
+          }`}
+          style={{
+            backgroundColor:
+              selectedType === type ? "rgba(255, 114, 0, 0.1)" : "white",
+            borderColor: selectedType === type ? "#FF7200FF" : "#F3F4F6",
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.05,
+            shadowRadius: 8,
+            elevation: 2,
+          }}
+        >
+          <Text
+            className={`text-center font-semibold ${
+              selectedType === type ? "text-gray-800" : "text-gray-600"
+            }`}
+            style={{
+              color: selectedType === type ? "#FF7200FF" : "#6B7280",
+            }}
+          >
+            {type}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+
+    {/* Custom Type Input - Only show when "Other" is selected */}
+    {selectedType === "Other" && (
+      <TextInput
+        placeholder="Enter pet type (e.g., Rabbit, Bird, etc.)"
+        placeholderTextColor="#9CA3AF"
+        className="px-5 py-4 text-base text-gray-800 bg-white rounded-2xl border-2 border-gray-100"
+        style={{
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.05,
+          shadowRadius: 8,
+          elevation: 2,
+        }}
+        value={customType}
+        onChangeText={onCustomTypeChange}
+        autoCapitalize="words"
+      />
+    )}
+  </View>
+);
+
 // Submit Button Component
 const SubmitButton = ({
   onPress,
@@ -242,11 +312,13 @@ export default function AddPet() {
     gender: "",
     location: "",
     description: "",
+    type: "",
   });
   const [selectedImage, setSelectedImage] = useState<MediaFile | null>(null);
   const [selectedVideo, setSelectedVideo] = useState<MediaFile | null>(null);
   const [loading, setLoading] = useState({ image: false, video: false });
   const [uploading, setUploading] = useState(false);
+  const [customType, setCustomType] = useState("");
 
   // Video player for preview
   const videoPlayer = useVideoPlayer(selectedVideo?.uri || "", (player) => {
@@ -561,6 +633,7 @@ export default function AddPet() {
       "gender",
       "location",
       "description",
+      "type",
     ];
     const missingFields = required.filter(
       (field) => !formData[field as keyof PetFormData].trim()
@@ -571,6 +644,12 @@ export default function AddPet() {
         "Missing Information",
         `Please fill in: ${missingFields.join(", ")}`
       );
+      return false;
+    }
+
+    // Additional validation for custom type
+    if (formData.type === "Other" && !customType.trim()) {
+      Alert.alert("Missing Information", "Please enter a pet type.");
       return false;
     }
 
@@ -618,6 +697,10 @@ export default function AddPet() {
         return;
       }
 
+      // Determine final type value
+      const finalType =
+        formData.type === "Other" ? customType.trim() : formData.type;
+
       // Save pet data to database
       const petData = {
         name: formData.name.trim(),
@@ -626,6 +709,7 @@ export default function AddPet() {
         gender: formData.gender.trim(),
         location: formData.location.trim(),
         description: formData.description.trim(),
+        type: finalType,
         photoUrl,
         videoUrl,
         ownerId: user.id,
@@ -680,7 +764,11 @@ export default function AddPet() {
       gender: "",
       location: "",
       description: "",
+      type: "",
     });
+
+    // Clear custom type
+    setCustomType("");
 
     // Clear selected media
     setSelectedImage(null);
@@ -708,6 +796,14 @@ export default function AddPet() {
       console.log("Video player back error:", error);
     }
     router.push("./managePets");
+  };
+
+  const handleTypeSelect = (type: string) => {
+    updateFormData("type", type);
+    // Clear custom type when not selecting "Other"
+    if (type !== "Other") {
+      setCustomType("");
+    }
   };
 
   return (
@@ -787,6 +883,14 @@ export default function AddPet() {
               value={formData.description}
               onChangeText={(value) => updateFormData("description", value)}
               multiline
+            />
+
+            {/* Type Selector */}
+            <TypeSelector
+              selectedType={formData.type}
+              onTypeSelect={handleTypeSelect}
+              customType={customType}
+              onCustomTypeChange={(text) => setCustomType(text)}
             />
           </View>
 

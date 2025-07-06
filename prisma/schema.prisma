@@ -39,6 +39,7 @@ model Pet {
   videoUrl          String
   ownerId           String
   createdAt         DateTime           @default(now())
+  type              String?
   adoption_requests Adoption_Request[]
   owner             User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 }
