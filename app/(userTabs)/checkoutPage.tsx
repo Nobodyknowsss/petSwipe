@@ -1,5 +1,6 @@
 "use client"
 
+import { createClient } from "@supabase/supabase-js";
 import { useState } from "react";
 import { View, Text, ScrollView, TextInput, TouchableOpacity, Image, Modal, Alert, SafeAreaView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -99,6 +100,10 @@ const shippingOptions = [
   },
 ]
 
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ?? "";
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "";
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
 export default function CheckoutScreen() {
   const [cartItems] = useState<CartItem[]>(mockCartItems)
   const [currentStep, setCurrentStep] = useState(1) // 1: Shipping, 2: Payment, 3: Review
@@ -137,11 +142,28 @@ export default function CheckoutScreen() {
     return required.every((field) => shippingAddress[field as keyof ShippingAddress].trim() !== "")
   }
 
-  const handleNextStep = () => {
+  const handleNextStep = async () => {
     if (currentStep === 1) {
       if (!validateShippingForm()) {
         Alert.alert("Missing Information", "Please fill in all shipping address fields.")
         return
+      }
+
+      const { error } = await supabase.from("Shipping_Details").insert([
+        {
+          full_name: shippingAddress.fullName,
+          phone: shippingAddress.phoneNumber,
+          address: shippingAddress.address,
+          city: shippingAddress.city,
+          state: shippingAddress.state,
+          zip: shippingAddress.zipCode,
+          country: shippingAddress.country,
+          option: selectedShippingOption?.name,
+        }
+      ])
+      if (error) {
+        Alert.alert("Error", "Failed to save shipping details. Please try again.");
+        return;
       }
       setCurrentStep(2)
     } else if (currentStep === 2) {
