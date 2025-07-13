@@ -72,7 +72,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       router.replace("/(verifiedTabs)/home");
     } else if (data.is_seller === true) {
       router.replace("/(sellerTabs)/products");
-    }else {
+    } else {
       router.replace("/(userTabs)/home");
     }
   };

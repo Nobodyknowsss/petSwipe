@@ -38,7 +38,6 @@ interface VideoItem {
   commentCount?: number;
   likeCount?: number;
   isLikedByUser?: boolean;
-  pet_type?: string | null;
 }
 
 // TikTok-style Video Component
@@ -480,6 +479,7 @@ export default function Home() {
   const [activeFilter, setActiveFilter] = useState<"For You" | "Dog" | "Cat">(
     "For You"
   );
+  const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
   const flatListRef = useRef<FlatList>(null);
 
   // Handle screen focus/blur to pause videos when navigating away
@@ -496,8 +496,12 @@ export default function Home() {
   );
 
   useEffect(() => {
-    getVideos();
-  }, []);
+    // Only fetch videos on initial mount, not on subsequent tab switches
+    if (!hasInitiallyLoaded) {
+      getVideos();
+      setHasInitiallyLoaded(true);
+    }
+  }, [hasInitiallyLoaded]);
 
   const getVideos = async () => {
     try {

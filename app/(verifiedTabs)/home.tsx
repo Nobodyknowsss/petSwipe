@@ -14,6 +14,7 @@ import {
   Pressable,
   SafeAreaView,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { CommentsModal, getCommentCount } from "../../components/comments";
@@ -30,7 +31,6 @@ interface VideoItem {
   signedUrl?: string;
   description: string;
   user_id: string;
-  pet_id?: string;
   User: {
     username: string;
   };
@@ -470,8 +470,10 @@ const VideoItemComponent = ({
 export default function Home() {
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isScreenFocused, setIsScreenFocused] = useState(true);
+  const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
   const flatListRef = useRef<FlatList>(null);
 
   // Handle screen focus/blur to pause videos when navigating away
@@ -488,8 +490,12 @@ export default function Home() {
   );
 
   useEffect(() => {
-    getVideos();
-  }, []);
+    // Only fetch videos on initial mount, not on subsequent tab switches
+    if (!hasInitiallyLoaded) {
+      getVideos();
+      setHasInitiallyLoaded(true);
+    }
+  }, [hasInitiallyLoaded]);
 
   const getVideos = async () => {
     try {
@@ -513,6 +519,19 @@ export default function Home() {
       console.error("Error in getVideos:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    console.log("🔄 Refresh started");
+    setRefreshing(true);
+    try {
+      await getVideos();
+    } catch (error) {
+      console.error("❌ Error refreshing videos:", error);
+    } finally {
+      console.log("🏁 Refresh completed");
+      setRefreshing(false);
     }
   };
 
@@ -626,12 +645,45 @@ export default function Home() {
         <Text className="px-8 text-center text-gray-400">
           Create some posts with videos to see them here!
         </Text>
+        <TouchableOpacity
+          onPress={handleRefresh}
+          className="px-6 py-3 mt-4 bg-orange-500 rounded-full"
+        >
+          <Text className="font-semibold text-white">Refresh</Text>
+        </TouchableOpacity>
       </SafeAreaView>
     );
   }
 
   return (
     <View className="flex-1 bg-black">
+      {/* Top Bar with Refresh Button */}
+      <View className="absolute right-0 left-0 top-12 z-20 flex-row justify-end items-center px-6 py-3">
+        {/* Refresh Button */}
+        <TouchableOpacity
+          onPress={handleRefresh}
+          disabled={refreshing}
+          className="justify-center items-center w-10 h-10 rounded-full border border-gray-600 bg-black/70"
+          style={{
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.3,
+            shadowRadius: 4,
+            elevation: 5,
+            opacity: refreshing ? 0.6 : 1,
+          }}
+        >
+          <AntDesign
+            name="reload1"
+            size={20}
+            color="white"
+            style={{
+              transform: [{ rotate: refreshing ? "180deg" : "0deg" }],
+            }}
+          />
+        </TouchableOpacity>
+      </View>
+
       <FlatList
         ref={flatListRef}
         data={videos}
