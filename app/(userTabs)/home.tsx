@@ -4,7 +4,6 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import Entypo from "@expo/vector-icons/Entypo";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useFocusEffect } from "@react-navigation/native";
-import { router } from "expo-router";
 import { VideoView, useVideoPlayer } from "expo-video";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -16,6 +15,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { PetDetailsModal } from "../../components";
 import { CommentsModal, getCommentCount } from "../../components/comments";
 import VideoSearch from "../../components/VideoSearch";
 import { supabase } from "../../utils/supabase";
@@ -38,6 +38,7 @@ interface VideoItem {
   commentCount?: number;
   likeCount?: number;
   isLikedByUser?: boolean;
+  pet_type?: string | null;
 }
 
 // TikTok-style Video Component
@@ -45,10 +46,12 @@ const VideoItemComponent = ({
   item,
   isVisible,
   isScreenFocused,
+  onShowPetDetails,
 }: {
   item: VideoItem;
   isVisible: boolean;
   isScreenFocused: boolean;
+  onShowPetDetails: (petId?: string, userId?: string) => void;
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -220,17 +223,39 @@ const VideoItemComponent = ({
     getCommentCount(item.id).then(setCommentCount);
   };
 
-  const handleAdaptPress = () => {
+  const handleAdaptPress = async () => {
     if (!item.user_id) {
       alert("No pet information available");
       return;
     }
 
-    // Navigate to show the specific pet from this video creator
-    // Pass video creation time to help match the correct pet
-    router.push(
-      `./petDetails?userId=${item.user_id}&showFirst=true&fromVideo=true&videoDate=${item.createdAt}`
-    );
+    try {
+      // Find the pet that matches this video's URI
+      const { data: pets, error } = await supabase
+        .from("Pet")
+        .select("id")
+        .eq("ownerId", item.user_id)
+        .eq("videoUrl", item.uri);
+
+      if (error) {
+        console.error("Error finding pet:", error);
+        // Fallback to showing all pets
+        onShowPetDetails(undefined, item.user_id);
+        return;
+      }
+
+      if (pets && pets.length > 0) {
+        // Found the exact pet, show its details in modal
+        onShowPetDetails(pets[0].id, undefined);
+      } else {
+        // No exact match found, show all pets from this user
+        onShowPetDetails(undefined, item.user_id);
+      }
+    } catch (error) {
+      console.error("Error in handleAdaptPress:", error);
+      // Fallback to showing all pets
+      onShowPetDetails(undefined, item.user_id);
+    }
   };
 
   const handleSharePress = () => {
@@ -479,7 +504,9 @@ export default function Home() {
   const [activeFilter, setActiveFilter] = useState<"For You" | "Dog" | "Cat">(
     "For You"
   );
-  const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
+  const [showPetDetailsModal, setShowPetDetailsModal] = useState(false);
+  const [selectedPetId, setSelectedPetId] = useState<string | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const flatListRef = useRef<FlatList>(null);
 
   // Handle screen focus/blur to pause videos when navigating away
@@ -496,12 +523,8 @@ export default function Home() {
   );
 
   useEffect(() => {
-    // Only fetch videos on initial mount, not on subsequent tab switches
-    if (!hasInitiallyLoaded) {
-      getVideos();
-      setHasInitiallyLoaded(true);
-    }
-  }, [hasInitiallyLoaded]);
+    getVideos();
+  }, []);
 
   const getVideos = async () => {
     try {
@@ -649,6 +672,7 @@ export default function Home() {
           item={item}
           isVisible={isVisible}
           isScreenFocused={isScreenFocused}
+          onShowPetDetails={handleShowPetDetails}
         />
       </View>
     );
@@ -670,6 +694,12 @@ export default function Home() {
   const handleFilterPress = (filter: "For You" | "Dog" | "Cat") => {
     console.log(`🎛️ ${filter} filter pressed - no filtering applied`);
     setActiveFilter(filter);
+  };
+
+  const handleShowPetDetails = (petId?: string, userId?: string) => {
+    setSelectedPetId(petId || null);
+    setSelectedUserId(userId || null);
+    setShowPetDetailsModal(true);
   };
 
   return (
@@ -788,6 +818,18 @@ export default function Home() {
         onClose={handleSearchClose}
         videos={videos}
         onVideoSelect={handleVideoSelect}
+      />
+
+      {/* Pet Details Modal */}
+      <PetDetailsModal
+        visible={showPetDetailsModal}
+        onClose={() => {
+          setShowPetDetailsModal(false);
+          setSelectedPetId(null);
+          setSelectedUserId(null);
+        }}
+        petId={selectedPetId || undefined}
+        userId={selectedUserId || undefined}
       />
     </View>
   );

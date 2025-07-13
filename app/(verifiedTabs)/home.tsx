@@ -4,7 +4,6 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import Entypo from "@expo/vector-icons/Entypo";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useFocusEffect } from "@react-navigation/native";
-import { router } from "expo-router";
 import { VideoView, useVideoPlayer } from "expo-video";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -14,9 +13,9 @@ import {
   Pressable,
   SafeAreaView,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
+import { PetDetailsModal } from "../../components";
 import { CommentsModal, getCommentCount } from "../../components/comments";
 import { supabase } from "../../utils/supabase";
 import { useAuth } from "../provider/AuthProvider";
@@ -31,6 +30,7 @@ interface VideoItem {
   signedUrl?: string;
   description: string;
   user_id: string;
+  pet_id?: string;
   User: {
     username: string;
   };
@@ -45,10 +45,12 @@ const VideoItemComponent = ({
   item,
   isVisible,
   isScreenFocused,
+  onShowPetDetails,
 }: {
   item: VideoItem;
   isVisible: boolean;
   isScreenFocused: boolean;
+  onShowPetDetails: (petId?: string, userId?: string) => void;
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -220,17 +222,39 @@ const VideoItemComponent = ({
     getCommentCount(item.id).then(setCommentCount);
   };
 
-  const handleAdaptPress = () => {
+  const handleAdaptPress = async () => {
     if (!item.user_id) {
       alert("No pet information available");
       return;
     }
 
-    // Navigate to show the specific pet from this video creator
-    // Pass video creation time to help match the correct pet
-    router.push(
-      `./petDetails?userId=${item.user_id}&showFirst=true&fromVideo=true&videoDate=${item.createdAt}`
-    );
+    try {
+      // Find the pet that matches this video's URI
+      const { data: pets, error } = await supabase
+        .from("Pet")
+        .select("id")
+        .eq("ownerId", item.user_id)
+        .eq("videoUrl", item.uri);
+
+      if (error) {
+        console.error("Error finding pet:", error);
+        // Fallback to showing all pets
+        onShowPetDetails(undefined, item.user_id);
+        return;
+      }
+
+      if (pets && pets.length > 0) {
+        // Found the exact pet, navigate directly to its details
+        onShowPetDetails(pets[0].id, item.user_id);
+      } else {
+        // No exact match found, show all pets from this user
+        onShowPetDetails(undefined, item.user_id);
+      }
+    } catch (error) {
+      console.error("Error in handleAdaptPress:", error);
+      // Fallback to showing all pets
+      onShowPetDetails(undefined, item.user_id);
+    }
   };
 
   const handleSharePress = () => {};
@@ -460,9 +484,6 @@ const VideoItemComponent = ({
         onClose={handleCommentsModalClose}
         videoId={item.id}
       />
-
-      {/* Black background for tab bar area */}
-      <View className="bg-black" style={{ height: TAB_BAR_HEIGHT }} />
     </View>
   );
 };
@@ -470,10 +491,11 @@ const VideoItemComponent = ({
 export default function Home() {
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isScreenFocused, setIsScreenFocused] = useState(true);
-  const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
+  const [showPetDetailsModal, setShowPetDetailsModal] = useState(false);
+  const [selectedPetId, setSelectedPetId] = useState<string | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const flatListRef = useRef<FlatList>(null);
 
   // Handle screen focus/blur to pause videos when navigating away
@@ -490,12 +512,8 @@ export default function Home() {
   );
 
   useEffect(() => {
-    // Only fetch videos on initial mount, not on subsequent tab switches
-    if (!hasInitiallyLoaded) {
-      getVideos();
-      setHasInitiallyLoaded(true);
-    }
-  }, [hasInitiallyLoaded]);
+    getVideos();
+  }, []);
 
   const getVideos = async () => {
     try {
@@ -519,19 +537,6 @@ export default function Home() {
       console.error("Error in getVideos:", error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleRefresh = async () => {
-    console.log("🔄 Refresh started");
-    setRefreshing(true);
-    try {
-      await getVideos();
-    } catch (error) {
-      console.error("❌ Error refreshing videos:", error);
-    } finally {
-      console.log("🏁 Refresh completed");
-      setRefreshing(false);
     }
   };
 
@@ -609,6 +614,12 @@ export default function Home() {
     itemVisiblePercentThreshold: 80,
   };
 
+  const handleShowPetDetails = (petId?: string, userId?: string) => {
+    setSelectedPetId(petId || null);
+    setSelectedUserId(userId || null);
+    setShowPetDetailsModal(true);
+  };
+
   const renderVideoItem = ({
     item,
     index,
@@ -624,6 +635,7 @@ export default function Home() {
           item={item}
           isVisible={isVisible}
           isScreenFocused={isScreenFocused}
+          onShowPetDetails={handleShowPetDetails}
         />
       </View>
     );
@@ -645,45 +657,12 @@ export default function Home() {
         <Text className="px-8 text-center text-gray-400">
           Create some posts with videos to see them here!
         </Text>
-        <TouchableOpacity
-          onPress={handleRefresh}
-          className="px-6 py-3 mt-4 bg-orange-500 rounded-full"
-        >
-          <Text className="font-semibold text-white">Refresh</Text>
-        </TouchableOpacity>
       </SafeAreaView>
     );
   }
 
   return (
     <View className="flex-1 bg-black">
-      {/* Top Bar with Refresh Button */}
-      <View className="absolute right-0 left-0 top-12 z-20 flex-row justify-end items-center px-6 py-3">
-        {/* Refresh Button */}
-        <TouchableOpacity
-          onPress={handleRefresh}
-          disabled={refreshing}
-          className="justify-center items-center w-10 h-10 rounded-full border border-gray-600 bg-black/70"
-          style={{
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.3,
-            shadowRadius: 4,
-            elevation: 5,
-            opacity: refreshing ? 0.6 : 1,
-          }}
-        >
-          <AntDesign
-            name="reload1"
-            size={20}
-            color="white"
-            style={{
-              transform: [{ rotate: refreshing ? "180deg" : "0deg" }],
-            }}
-          />
-        </TouchableOpacity>
-      </View>
-
       <FlatList
         ref={flatListRef}
         data={videos}
@@ -701,6 +680,18 @@ export default function Home() {
           offset: screenHeight * index,
           index,
         })}
+      />
+
+      {/* Pet Details Modal */}
+      <PetDetailsModal
+        visible={showPetDetailsModal}
+        onClose={() => {
+          setShowPetDetailsModal(false);
+          setSelectedPetId(null);
+          setSelectedUserId(null);
+        }}
+        petId={selectedPetId || undefined}
+        userId={selectedUserId || undefined}
       />
     </View>
   );
