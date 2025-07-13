@@ -76,13 +76,13 @@ export default function MessageScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-900">
-      <View className="flex-1 bg-gray-900" style={{ paddingBottom: 50 }}>
+    <SafeAreaView className="flex-1 bg-white">
+      <View className="flex-1 bg-white" style={{ paddingBottom: 50 }}>
         {/* Header */}
-        <View className="px-4 py-3 bg-gray-800 border-b border-gray-700 shadow-sm">
+        <View className="px-4 py-3 bg-white border-b border-gray-300 shadow-sm">
           <View className="flex-row justify-between items-center">
             <View className="flex-row items-center">
-              <Text className="text-2xl font-bold text-white">Chats</Text>
+              <Text className="text-2xl font-bold text-gray-900">Chats</Text>
             </View>
 
             {/* New Chat Button */}

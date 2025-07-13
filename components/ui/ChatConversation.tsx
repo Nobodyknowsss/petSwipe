@@ -246,7 +246,7 @@ export default function ChatConversation({
       <View className="px-4 mb-1">
         {showTime && (
           <View className="items-center my-4">
-            <Text className="px-3 py-1 text-xs text-gray-500 bg-gray-800 rounded-full">
+            <Text className="px-3 py-1 text-xs text-gray-500 bg-gray-200 rounded-full">
               {formatTime(message.createdAt)}
             </Text>
           </View>
@@ -255,12 +255,12 @@ export default function ChatConversation({
           className={`max-w-[280px] px-4 py-3 ${
             message.isFromCurrentUser
               ? "bg-blue-500 self-end rounded-2xl"
-              : "bg-gray-700 self-start rounded-2xl"
+              : "bg-gray-200 self-start rounded-2xl"
           } ${groupWithNext ? "mb-1" : "mb-2"}`}
         >
           <Text
             className={`text-base leading-5 ${
-              message.isFromCurrentUser ? "text-white" : "text-white"
+              message.isFromCurrentUser ? "text-white" : "text-gray-900"
             }`}
           >
             {message.text}
@@ -279,21 +279,21 @@ export default function ChatConversation({
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-900">
+    <SafeAreaView className="flex-1 bg-white">
       <KeyboardAvoidingView
-        className="flex-1 bg-gray-900"
+        className="flex-1 bg-white"
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={0}
       >
         {/* Header */}
-        <View className="px-4 py-3 bg-gray-800 border-b border-gray-700 shadow-sm">
+        <View className="px-4 py-3 bg-white border-b border-gray-300 shadow-sm">
           <View className="flex-row justify-between items-center">
             <View className="flex-row flex-1 items-center">
               <TouchableOpacity
                 onPress={onBack}
-                className="p-2 mr-3 bg-gray-700 rounded-full"
+                className="p-2 mr-3 bg-gray-200 rounded-full"
               >
-                <ArrowLeft size={20} color="#9CA3AF" />
+                <ArrowLeft size={20} color="#6B7280" />
               </TouchableOpacity>
 
               <View className="flex-row flex-1 items-center">
@@ -303,30 +303,30 @@ export default function ChatConversation({
                   </Text>
                 </View>
                 <View className="flex-1 ml-3">
-                  <Text className="text-lg font-semibold text-white">
+                  <Text className="text-lg font-semibold text-gray-900">
                     {otherUsername}
                   </Text>
-                  <Text className="text-sm text-green-400">Active now</Text>
+                  <Text className="text-sm text-green-500">Active now</Text>
                 </View>
               </View>
             </View>
 
             <View className="flex-row gap-4 items-center">
-              <TouchableOpacity className="p-2 bg-gray-700 rounded-full">
-                <Phone size={20} color="#9CA3AF" />
+              <TouchableOpacity className="p-2 bg-gray-200 rounded-full">
+                <Phone size={20} color="#6B7280" />
               </TouchableOpacity>
-              <TouchableOpacity className="p-2 bg-gray-700 rounded-full">
-                <Video size={20} color="#9CA3AF" />
+              <TouchableOpacity className="p-2 bg-gray-200 rounded-full">
+                <Video size={20} color="#6B7280" />
               </TouchableOpacity>
-              <TouchableOpacity className="p-2 bg-gray-700 rounded-full">
-                <Info size={20} color="#9CA3AF" />
+              <TouchableOpacity className="p-2 bg-gray-200 rounded-full">
+                <Info size={20} color="#6B7280" />
               </TouchableOpacity>
             </View>
           </View>
         </View>
 
         {/* Messages */}
-        <View className="flex-1 bg-gray-900">
+        <View className="flex-1 bg-white">
           <FlatList
             ref={flatListRef}
             data={messages}
@@ -343,7 +343,7 @@ export default function ChatConversation({
             ListEmptyComponent={
               loading ? (
                 <View className="flex-1 justify-center items-center py-32">
-                  <Text className="text-center text-gray-500">
+                  <Text className="text-center text-gray-600">
                     Loading messages...
                   </Text>
                 </View>
@@ -354,10 +354,10 @@ export default function ChatConversation({
                       {otherUsername.charAt(0).toUpperCase()}
                     </Text>
                   </View>
-                  <Text className="mb-2 text-xl font-semibold text-white">
+                  <Text className="mb-2 text-xl font-semibold text-gray-900">
                     Say hello to {otherUsername}!
                   </Text>
-                  <Text className="px-8 text-center text-gray-400">
+                  <Text className="px-8 text-center text-gray-600">
                     This is the beginning of your conversation
                   </Text>
                 </View>
@@ -375,17 +375,17 @@ export default function ChatConversation({
         </View>
 
         <View
-          className="px-4 py-3 bg-gray-800 border-t border-gray-700"
+          className="px-4 py-3 bg-white border-t border-gray-300"
           style={{ marginBottom: 85 }}
         >
-          <View className="flex-row items-center px-4 py-2 bg-gray-700 rounded-full">
+          <View className="flex-row items-center px-4 py-2 bg-gray-100 rounded-full">
             <TextInput
               ref={textInputRef}
               value={inputText}
               onChangeText={setInputText}
               placeholder="Type a message..."
               placeholderTextColor="#9CA3AF"
-              className="flex-1 mx-2 text-base text-white"
+              className="flex-1 mx-2 text-base text-gray-900"
               multiline
               maxLength={1000}
               onFocus={() => setIsTyping(true)}
@@ -398,7 +398,7 @@ export default function ChatConversation({
               onPress={sendMessage}
               disabled={!inputText.trim()}
               className={`p-2 rounded-full ${
-                inputText.trim() ? "bg-blue-500" : "bg-gray-600"
+                inputText.trim() ? "bg-blue-500" : "bg-gray-400"
               }`}
             >
               <Send size={18} color="white" />
