@@ -15,6 +15,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { PetDetailsModal } from "../../components";
 import { supabase } from "../../utils/supabase";
 import { useAuth } from "../provider/AuthProvider";
 
@@ -48,6 +49,8 @@ export default function MyPets() {
   );
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [showPetDetailsModal, setShowPetDetailsModal] = useState(false);
+  const [selectedPetId, setSelectedPetId] = useState<string | null>(null);
 
   // Fetch adoption requests when screen focuses
   useFocusEffect(
@@ -265,11 +268,10 @@ export default function MyPets() {
                 shadowRadius: 8,
                 elevation: 3,
               }}
-              onPress={() =>
-                router.push(
-                  `./petDetails?petId=${request.pet.id}&fromMyPets=true`
-                )
-              }
+              onPress={() => {
+                setSelectedPetId(request.pet.id);
+                setShowPetDetailsModal(true);
+              }}
             >
               <Text className="font-semibold text-center text-white">
                 View Pet
@@ -510,6 +512,16 @@ export default function MyPets() {
           )}
         </View>
       </View>
+
+      {/* Pet Details Modal */}
+      <PetDetailsModal
+        visible={showPetDetailsModal}
+        onClose={() => {
+          setShowPetDetailsModal(false);
+          setSelectedPetId(null);
+        }}
+        petId={selectedPetId || undefined}
+      />
     </SafeAreaView>
   );
 }

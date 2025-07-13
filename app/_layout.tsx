@@ -31,7 +31,7 @@ export default function layout() {
             headerShown: false,
           }}
         />
-        <Stack.Screen 
+        <Stack.Screen
           name="(adoptionProfile)"
           options={{
             headerShown: false,

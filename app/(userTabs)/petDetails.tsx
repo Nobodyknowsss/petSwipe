@@ -69,7 +69,7 @@ export default function PetDetails() {
       Alert.alert("Error", "No pet specified to view.");
       router.back();
     }
-  }, [userId, petId, showFirst, fromVideo, videoDate, fromMyPets]);
+  }, [userId, petId, showFirst, fromVideo, fromMyPets]);
 
   // Add new utility functions for adoption flow
   const checkAdoptionProfile = async (userId: string): Promise<boolean> => {
@@ -241,10 +241,13 @@ export default function PetDetails() {
       }
 
       setPets(data || []);
-      // If only one pet, go directly to details
-      if (data && data.length === 1) {
+      // If coming from video, always show list view to let user choose
+      // If only one pet and not from video, go directly to details
+      if (data && data.length === 1 && fromVideo !== "true") {
         setSelectedPet(data[0]);
         setStep("details");
+      } else {
+        setStep("list");
       }
     } catch (error) {
       console.error("Error fetching pets:", error);
@@ -552,11 +555,17 @@ export default function PetDetails() {
             </TouchableOpacity>
             <View className="flex-1">
               <Text className="text-2xl font-bold text-gray-800">
-                {step === "details" ? selectedPet?.name : "Pet Selection"}
+                {step === "details"
+                  ? selectedPet?.name
+                  : fromVideo === "true"
+                    ? "Choose a Pet to Adopt"
+                    : "Pet Selection"}
               </Text>
               {step === "list" && (
                 <Text className="mt-1 text-sm text-gray-500">
-                  {pets.length} pet{pets.length !== 1 ? "s" : ""} available
+                  {fromVideo === "true"
+                    ? `Select which pet you'd like to adopt from @${pets[0]?.ownerId || "this user"}`
+                    : `${pets.length} pet${pets.length !== 1 ? "s" : ""} available`}
                 </Text>
               )}
             </View>

@@ -93,7 +93,7 @@ export default function StartChatModal({
 
   const renderUser = ({ item }: { item: SearchUser }) => (
     <TouchableOpacity
-      className="flex-row items-center p-4 bg-gray-800 border-b border-gray-700 active:bg-gray-700"
+      className="flex-row items-center p-4 bg-white border-b border-gray-200 active:bg-gray-100"
       onPress={() => handleUserSelect(item)}
     >
       <View className="justify-center items-center w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full">
@@ -102,10 +102,10 @@ export default function StartChatModal({
         </Text>
       </View>
       <View className="flex-1 ml-3">
-        <Text className="text-lg font-semibold text-white">
+        <Text className="text-lg font-semibold text-gray-900">
           {item.username}
         </Text>
-        <Text className="text-sm text-gray-400">{getUserBadge(item)}</Text>
+        <Text className="text-sm text-gray-600">{getUserBadge(item)}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -117,36 +117,36 @@ export default function StartChatModal({
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <View className="flex-1 bg-gray-900">
+      <View className="flex-1 bg-white">
         {/* Header */}
-        <View className="px-6 py-4 bg-gray-800 border-b border-gray-700">
+        <View className="px-6 py-4 bg-white border-b border-gray-300">
           <View className="flex-row justify-between items-center">
-            <Text className="text-xl font-bold text-white">Find People</Text>
+            <Text className="text-xl font-bold text-gray-900">Find People</Text>
             <TouchableOpacity onPress={onClose} className="p-2">
-              <X size={24} color="#9CA3AF" />
+              <X size={24} color="#6B7280" />
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Search Input */}
-        <View className="px-6 py-4 bg-gray-800 border-b border-gray-700">
-          <View className="flex-row items-center px-4 py-3 bg-gray-700 rounded-full">
+        <View className="px-6 py-4 bg-white border-b border-gray-200">
+          <View className="flex-row items-center px-4 py-3 bg-gray-100 rounded-full">
             <TextInput
               value={searchQuery}
               onChangeText={setSearchQuery}
               placeholder="Search usernames..."
               placeholderTextColor="#9CA3AF"
-              className="flex-1 text-lg text-white"
+              className="flex-1 text-lg text-gray-900"
               autoFocus
             />
           </View>
         </View>
 
         {/* User List */}
-        <View className="flex-1 bg-gray-900">
+        <View className="flex-1 bg-white">
           {loading ? (
             <View className="justify-center items-center py-12">
-              <Text className="text-lg text-gray-400">Searching...</Text>
+              <Text className="text-lg text-gray-600">Searching...</Text>
             </View>
           ) : (
             <FlatList
@@ -156,7 +156,7 @@ export default function StartChatModal({
               showsVerticalScrollIndicator={false}
               ListEmptyComponent={
                 <View className="justify-center items-center py-20">
-                  <Text className="text-lg text-center text-gray-400">
+                  <Text className="text-lg text-center text-gray-600">
                     {searchQuery
                       ? "No users found"
                       : "Start typing to search for people"}

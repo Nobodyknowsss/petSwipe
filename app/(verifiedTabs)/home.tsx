@@ -4,7 +4,6 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import Entypo from "@expo/vector-icons/Entypo";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useFocusEffect } from "@react-navigation/native";
-import { router } from "expo-router";
 import { VideoView, useVideoPlayer } from "expo-video";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -16,6 +15,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { PetDetailsModal } from "../../components";
 import { CommentsModal, getCommentCount } from "../../components/comments";
 import { supabase } from "../../utils/supabase";
 import { useAuth } from "../provider/AuthProvider";
@@ -45,10 +45,12 @@ const VideoItemComponent = ({
   item,
   isVisible,
   isScreenFocused,
+  onShowPetDetails,
 }: {
   item: VideoItem;
   isVisible: boolean;
   isScreenFocused: boolean;
+  onShowPetDetails: (petId?: string, userId?: string) => void;
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -220,17 +222,39 @@ const VideoItemComponent = ({
     getCommentCount(item.id).then(setCommentCount);
   };
 
-  const handleAdaptPress = () => {
+  const handleAdaptPress = async () => {
     if (!item.user_id) {
       alert("No pet information available");
       return;
     }
 
-    // Navigate to show the specific pet from this video creator
-    // Pass video creation time to help match the correct pet
-    router.push(
-      `./petDetails?userId=${item.user_id}&showFirst=true&fromVideo=true&videoDate=${item.createdAt}`
-    );
+    try {
+      // Find the pet that matches this video's URI
+      const { data: pets, error } = await supabase
+        .from("Pet")
+        .select("id")
+        .eq("ownerId", item.user_id)
+        .eq("videoUrl", item.uri);
+
+      if (error) {
+        console.error("Error finding pet:", error);
+        // Fallback to showing all pets
+        onShowPetDetails(undefined, item.user_id);
+        return;
+      }
+
+      if (pets && pets.length > 0) {
+        // Found the exact pet, navigate directly to its details
+        onShowPetDetails(pets[0].id, item.user_id);
+      } else {
+        // No exact match found, show all pets from this user
+        onShowPetDetails(undefined, item.user_id);
+      }
+    } catch (error) {
+      console.error("Error in handleAdaptPress:", error);
+      // Fallback to showing all pets
+      onShowPetDetails(undefined, item.user_id);
+    }
   };
 
   const handleSharePress = () => {};
@@ -460,9 +484,6 @@ const VideoItemComponent = ({
         onClose={handleCommentsModalClose}
         videoId={item.id}
       />
-
-      {/* Black background for tab bar area */}
-      <View className="bg-black" style={{ height: TAB_BAR_HEIGHT }} />
     </View>
   );
 };
@@ -472,6 +493,9 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isScreenFocused, setIsScreenFocused] = useState(true);
+  const [showPetDetailsModal, setShowPetDetailsModal] = useState(false);
+  const [selectedPetId, setSelectedPetId] = useState<string | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const flatListRef = useRef<FlatList>(null);
 
   // Handle screen focus/blur to pause videos when navigating away
@@ -590,6 +614,12 @@ export default function Home() {
     itemVisiblePercentThreshold: 80,
   };
 
+  const handleShowPetDetails = (petId?: string, userId?: string) => {
+    setSelectedPetId(petId || null);
+    setSelectedUserId(userId || null);
+    setShowPetDetailsModal(true);
+  };
+
   const renderVideoItem = ({
     item,
     index,
@@ -605,6 +635,7 @@ export default function Home() {
           item={item}
           isVisible={isVisible}
           isScreenFocused={isScreenFocused}
+          onShowPetDetails={handleShowPetDetails}
         />
       </View>
     );
@@ -649,6 +680,18 @@ export default function Home() {
           offset: screenHeight * index,
           index,
         })}
+      />
+
+      {/* Pet Details Modal */}
+      <PetDetailsModal
+        visible={showPetDetailsModal}
+        onClose={() => {
+          setShowPetDetailsModal(false);
+          setSelectedPetId(null);
+          setSelectedUserId(null);
+        }}
+        petId={selectedPetId || undefined}
+        userId={selectedUserId || undefined}
       />
     </View>
   );
